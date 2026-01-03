@@ -772,7 +772,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                                 <div className="text-3xl font-black text-white italic text-center drop-shadow-md">{freeSpinsRemaining}</div>
                             </div>
                         )}
-                        <div className="bg-black/60 backdrop-blur-md rounded-xl p-2 border border-pink-500/30 shadow-xl w-fit">
+                        <div className="bg-black/60 backdrop-blur-md rounded-xl p-2 border border-pink-500/30 shadow-xl w-fit" style={{ position: 'relative', top: '-10px' }}>
                             <span className="text-pink-400 font-black text-lg italic tracking-tighter">4 X SCATTER</span>
                             <div className="text-[8px] uppercase font-bold text-white/60 tracking-widest">FREE SPINS KAZANDIRIR</div>
                         </div>
@@ -783,7 +783,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
 
                     {/* Right: Volatility Check (Image 4) */}
                     <div className="flex flex-col items-end gap-2">
-                        <div className="bg-black/60 backdrop-blur-md rounded-xl p-2 border border-blue-500/30 shadow-xl flex flex-col items-end w-fit">
+                        <div className="bg-black/60 backdrop-blur-md rounded-xl p-2 border border-blue-500/30 shadow-xl flex flex-col items-end w-fit" style={{ position: 'relative', top: '-10px' }}>
                             <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest mb-0.5">{t('sweetBonanza.volatility')}</span>
                             <div className="flex gap-0.5">
                                 {[1, 2, 3, 4, 5].map(i => (
