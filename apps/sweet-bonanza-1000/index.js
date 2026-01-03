@@ -752,14 +752,14 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
             {/* Header Bar - Removed for maximum space */}
 
             {/* Main Game Area */}
-            <div className={`relative z-10 flex-1 flex flex-col items-center p-2 md:p-6 pb-0 w-full`}
+            <div className={`fixed z-10 flex flex-col items-center p-2 md:p-6 pb-0`}
                 style={{
-                    transform: `scale(${gameScale})`,
-                    transformOrigin: 'top center',
-                    width: '512px',
+                    transform: `translate(-50%, -50%) scale(${gameScale})`,
+                    top: '50%',
+                    left: '50%',
+                    width: '499px',
                     maxWidth: '1000px',
-                    position: 'relative',
-                    left: '-20px'
+                    margin: '0px'
                 }}>
 
                 {/* Top Banner - Logo & Info (Image 2) */}
