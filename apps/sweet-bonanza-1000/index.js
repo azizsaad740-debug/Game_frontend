@@ -736,10 +736,10 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
 
             {/* Main Game Area */}
             <div className={`relative z-10 h-full flex flex-col items-center p-2 md:p-6 pb-0 overflow-hidden w-full`}
-                style={{ transform: `scale(${gameScale})`, transformOrigin: 'top center' }}>
+                style={{ transform: `scale(${gameScale})`, transformOrigin: 'top center', height: '905px' }}>
 
                 {/* Top Banner - Logo & Info (Image 2) */}
-                <div className="w-full max-w-[1600px] grid grid-cols-3 items-start px-10">
+                <div className="w-full max-w-[1600px] grid grid-cols-3 items-start px-10" style={{ position: 'relative', top: '7px' }}>
                     {/* Left: Ticker/Multiplier info */}
                     <div className="flex flex-col gap-2">
                         {isFreeSpins && (
@@ -788,7 +788,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                     {/* Central Area: Grid */}
                     <div className="flex flex-col items-center shrink min-h-0 scale-105 lg:scale-110">
                         {/* Central Grid Container */}
-                        <div className="relative bg-blue-400/20 backdrop-blur-xl rounded-[3rem] p-4 md:p-8 border-4 border-white/30 shadow-2xl ring-1 ring-blue-400/50 animate-neon-pulsate shrink min-h-0">
+                        <div className="relative bg-blue-400/20 backdrop-blur-xl rounded-[3rem] p-4 md:p-8 border-4 border-white/30 shadow-2xl ring-1 ring-blue-400/50 animate-neon-pulsate shrink min-h-0" style={{ borderWidth: '0px', borderStyle: 'solid', borderRadius: '23px', position: 'relative', top: '14px' }}>
                             <div className="grid grid-cols-6 gap-3 md:gap-5 bg-black/70 rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-inner border border-white/10 shrink min-h-0" style={{ width: '453px', height: '414px' }}>
                                 {grid.map((symbol, idx) => (
                                     <div key={idx} className={`relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center transition-all duration-500 ${droppingIndices.includes(idx) ? 'animate-drop-in' : ''} ${winningSymbols.includes(idx) ? 'animate-match-pop z-20' : ''}`}>
@@ -839,10 +839,10 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                 </div>
 
                 {/* Bottom Consolidated Section: Exact Reference Layout (Reduced size by 25%) */}
-                <div className="w-full shrink-0 flex flex-col items-center bg-black/25 backdrop-blur-3xl border-t border-white/10 mt-auto scale-90 lg:scale-[0.8] origin-bottom" style={{ position: 'relative', top: '100px', borderRadius: '15px', height: '199px' }}>
+                <div className="w-full shrink-0 flex flex-col items-center bg-black/25 backdrop-blur-3xl border-t border-white/10 mt-auto scale-90 lg:scale-[0.8] origin-bottom" style={{ position: 'relative', top: '79px', borderRadius: '15px', height: '199px' }}>
 
                     {/* Spin Row with +/- */}
-                    <div className="flex items-center justify-center gap-4 py-3 md:py-4 w-full" style={{ position: 'relative', top: '-90px', height: '84px' }}>
+                    <div className="flex items-center justify-center gap-4 py-3 md:py-4 w-full" style={{ position: 'relative', top: '-132px', height: '84px' }}>
                         <button onClick={() => adjustBet(-0.50)} className="w-10 h-10 flex items-center justify-center bg-white/10 rounded-full border border-white/20 text-white hover:bg-white/30 transition-all active:scale-90">
                             <span className="material-symbols-outlined text-2xl font-black">remove</span>
                         </button>
@@ -855,6 +855,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                                 ${isSpinning ? 'opacity-50' : 'hover:scale-110 active:scale-90 shadow-[0_0_40px_rgba(255,255,255,0.2)]'}
                                 bg-gradient-to-b from-white via-slate-100 to-slate-400 border-4 md:border-6 border-black/40
                             `}
+                            style={{ transform: 'scale(1.4)' }}
                         >
                             <span className={`material-symbols-outlined text-4xl md:text-5xl font-black text-slate-800 transition-all duration-500 ${isSpinning ? 'rotate-[360deg] animate-spin-slow' : 'rotate-0'}`}>
                                 sync
