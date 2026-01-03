@@ -815,11 +815,11 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                     <div className="lg:hidden flex gap-2 w-full px-4 overflow-x-auto pb-2">
                         <button onClick={() => handleBuyFreeSpins('regular')} className="bg-[#b91c1c] border border-[#fcd34d] px-4 py-2 rounded-xl flex-1 shrink-0 min-w-[140px]" style={{ width: '187px', height: '36px' }}>
                             <span className="text-[8px] font-black text-white uppercase block mb-0.5">BUY FS</span>
-                            <span className="text-sm font-black text-white italic">₺ {(betAmount * 100).toLocaleString()}</span>
+                            <span className="text-sm font-black text-white italic" style={{ position: 'relative', top: '-5px' }}>₺ {(betAmount * 100).toLocaleString()}</span>
                         </button>
                         <button onClick={() => handleBuyFreeSpins('super')} className="bg-[#ea580c] border border-[#fcd34d] px-4 py-2 rounded-xl flex-1 shrink-0 min-w-[140px]" style={{ width: '187px', height: '36px' }}>
                             <span className="text-[8px] font-black text-white uppercase block mb-0.5">SUPER BUY</span>
-                            <span className="text-sm font-black text-white italic">₺ {(betAmount * 500).toLocaleString()}</span>
+                            <span className="text-sm font-black text-white italic" style={{ position: 'relative', top: '-5px' }}>₺ {(betAmount * 500).toLocaleString()}</span>
                         </button>
                     </div>
 
@@ -839,10 +839,10 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                 </div>
 
                 {/* Bottom Consolidated Section: Exact Reference Layout (Reduced size by 25%) */}
-                <div className="w-full shrink-0 flex flex-col items-center bg-black/25 backdrop-blur-3xl border-t border-white/10 mt-auto scale-90 lg:scale-[0.8] origin-bottom">
+                <div className="w-full shrink-0 flex flex-col items-center bg-black/25 backdrop-blur-3xl border-t border-white/10 mt-auto scale-90 lg:scale-[0.8] origin-bottom" style={{ position: 'relative', top: '100px', borderRadius: '15px', height: '199px' }}>
 
                     {/* Spin Row with +/- */}
-                    <div className="flex items-center justify-center gap-4 py-3 md:py-4 w-full">
+                    <div className="flex items-center justify-center gap-4 py-3 md:py-4 w-full" style={{ position: 'relative', top: '-90px', height: '84px' }}>
                         <button onClick={() => adjustBet(-0.50)} className="w-10 h-10 flex items-center justify-center bg-white/10 rounded-full border border-white/20 text-white hover:bg-white/30 transition-all active:scale-90">
                             <span className="material-symbols-outlined text-2xl font-black">remove</span>
                         </button>
@@ -867,7 +867,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                     </div>
 
                     {/* Bottom Control Bar Bar */}
-                    <div className="w-full max-w-6xl mx-auto flex flex-col px-4 pb-2" style={{ borderRadius: '16px', fontSize: '11px', borderWidth: '0px', borderStyle: 'solid' }}>
+                    <div className="w-full max-w-6xl mx-auto flex flex-col px-4 pb-2" style={{ borderRadius: '16px', fontSize: '11px', borderWidth: '0px', borderStyle: 'solid', position: 'relative', left: '0px', top: '-85px' }}>
 
                         <div className="flex items-center justify-between mb-1">
                             {/* Icons Column 1 */}
