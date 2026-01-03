@@ -757,7 +757,9 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                     transform: `scale(${gameScale})`,
                     transformOrigin: 'top center',
                     width: '512px',
-                    maxWidth: '1000px'
+                    maxWidth: '1000px',
+                    position: 'relative',
+                    left: '-20px'
                 }}>
 
                 {/* Top Banner - Logo & Info (Image 2) */}
