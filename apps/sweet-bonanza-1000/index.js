@@ -447,6 +447,29 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
         return () => clearInterval(interval)
     }, [])
 
+    // IMAGE PRELOADING for performance - Caching graphical elements
+    useEffect(() => {
+        const imagesToPreload = [
+            ...SYMBOLS.map(s => s.image),
+            SCATTER.image,
+            MULTIPLIER.image,
+            '/assets/graphics/coin.png',
+            '/assets/graphics/multiplier_bg.png', // Background assets
+            '/assets/graphics/candy_clouds.png'
+        ];
+
+        let loadedCount = 0;
+        imagesToPreload.forEach(src => {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => {
+                loadedCount++;
+                // Optionally update loading progress based on actual image loads
+                // setLoadingProgress(Math.min(90, (loadedCount / imagesToPreload.length) * 100));
+            };
+        });
+    }, []);
+
     // Fetch user data on mount
     useEffect(() => {
         fetchUserData()
@@ -736,7 +759,15 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
 
             {/* Main Game Area */}
             <div className={`relative z-10 h-full flex flex-col items-center p-2 md:p-6 pb-0 overflow-hidden w-full`}
-                style={{ transform: `scale(${gameScale})`, transformOrigin: 'top center', height: '905px' }}>
+                style={{
+                    transform: `scale(${gameScale})`,
+                    transformOrigin: 'top center',
+                    height: '905px',
+                    maxWidth: '566px',
+                    position: 'relative',
+                    top: '10px',
+                    left: '-10px'
+                }}>
 
                 {/* Top Banner - Logo & Info (Image 2) */}
                 <div className="w-full max-w-[1600px] grid grid-cols-3 items-start px-10" style={{ position: 'relative', top: '7px' }}>
@@ -771,7 +802,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                 </div>
 
                 {/* Content Area: Grid + Sidebars for space efficiency on Desktop */}
-                <div className="w-full flex-1 flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-10 overflow-hidden my-auto">
+                <div className="w-full flex-1 flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-10 overflow-hidden my-auto" style={{ position: 'relative', left: '-10px', minHeight: '620px' }}>
 
                     {/* Left Sidebar: Buy Features */}
                     <div className="hidden lg:flex flex-col gap-3">
@@ -842,7 +873,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                 <div className="w-full shrink-0 flex flex-col items-center bg-black/25 backdrop-blur-3xl border-t border-white/10 mt-auto scale-90 lg:scale-[0.8] origin-bottom" style={{ position: 'relative', top: '79px', borderRadius: '15px', height: '199px' }}>
 
                     {/* Spin Row with +/- */}
-                    <div className="flex items-center justify-center gap-4 py-3 md:py-4 w-full" style={{ position: 'relative', top: '-132px', height: '84px' }}>
+                    <div className="flex items-center justify-center gap-4 py-3 md:py-4 w-full" style={{ position: 'relative', top: '-112px', height: '84px' }}>
                         <button onClick={() => adjustBet(-0.50)} className="w-10 h-10 flex items-center justify-center bg-white/10 rounded-full border border-white/20 text-white hover:bg-white/30 transition-all active:scale-90">
                             <span className="material-symbols-outlined text-2xl font-black">remove</span>
                         </button>
@@ -855,7 +886,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                                 ${isSpinning ? 'opacity-50' : 'hover:scale-110 active:scale-90 shadow-[0_0_40px_rgba(255,255,255,0.2)]'}
                                 bg-gradient-to-b from-white via-slate-100 to-slate-400 border-4 md:border-6 border-black/40
                             `}
-                            style={{ transform: 'scale(1.4)' }}
+                            style={{ transform: 'scale(1.4)', outline: '3px solid #10b981', scale: '0.92' }}
                         >
                             <span className={`material-symbols-outlined text-4xl md:text-5xl font-black text-slate-800 transition-all duration-500 ${isSpinning ? 'rotate-[360deg] animate-spin-slow' : 'rotate-0'}`}>
                                 sync
