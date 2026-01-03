@@ -362,16 +362,15 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
             const width = window.innerWidth
             const height = window.innerHeight
 
-            // Higher quality scaling: Determine scale based on the most restrictive dimension
-            const targetWidth = 600  // Base design width
-            const targetHeight = 900 // Base design height
+            const targetWidth = 480
+            const targetHeight = 850
 
             const scaleW = width / targetWidth
             const scaleH = height / targetHeight
 
-            // Use the smaller scale to ensure everything fits (Contain/Fit)
-            const finalScale = Math.min(1.1, Math.min(scaleW, scaleH))
-            setGameScale(finalScale)
+            let finalScale = Math.min(scaleW, scaleH)
+            if (width < 640) finalScale = Math.max(finalScale, width / 500)
+            setGameScale(Math.min(1.2, finalScale))
         }
 
         handleResize()
@@ -740,7 +739,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
     if (pageLoading) return <PragmaticLoading progress={loadingProgress} />
 
     return (
-        <div className="min-h-screen bg-[#0f172a] text-white flex flex-col font-sans overflow-y-auto select-none">
+        <div className="min-h-screen bg-[#0f172a] text-white flex flex-col font-sans overflow-x-hidden overflow-y-auto select-none">
             {/* Background Decor - Matches Candy/Sweet landscape in images */}
             <div
                 className="fixed inset-0 bg-cover bg-center pointer-events-none opacity-60 scale-110"
@@ -814,7 +813,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                         <div className="relative bg-blue-400/20 backdrop-blur-xl rounded-[3rem] p-4 md:p-8 border-4 border-white/30 shadow-2xl ring-1 ring-blue-400/50 animate-neon-pulsate shrink min-h-0" style={{ borderWidth: '0px', borderStyle: 'solid', borderRadius: '23px' }}>
                             <div className="grid grid-cols-6 gap-3 md:gap-5 bg-black/70 rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-inner border border-white/10 shrink min-h-0">
                                 {grid.map((symbol, idx) => (
-                                    <div key={idx} className={`relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center transition-all duration-500 ${droppingIndices.includes(idx) ? 'animate-drop-in' : ''} ${winningSymbols.includes(idx) ? 'animate-match-pop z-20' : ''}`}>
+                                    <div key={idx} className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex items-center justify-center transition-all duration-500 ${droppingIndices.includes(idx) ? 'animate-drop-in' : ''} ${winningSymbols.includes(idx) ? 'animate-match-pop z-20' : ''}`}>
                                         {symbol && (
                                             <div className="w-full h-full flex items-center justify-center">
                                                 <img src={symbol.image} alt={symbol.id} className={`w-[98%] h-[98%] object-contain drop-shadow-[0_6px_12px_rgba(0,0,0,0.5)] ${winningSymbols.includes(idx) ? 'animate-glow-pulse scale-110' : ''}`} />
@@ -891,7 +890,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                     </div>
 
                     {/* Bottom Control Bar Bar */}
-                    <div className="w-full max-w-6xl mx-auto flex flex-col px-4 pb-2" style={{ borderRadius: '16px', fontSize: '11px', borderWidth: '0px', borderStyle: 'solid' }}>
+                    <div className="w-full max-w-6xl mx-auto flex flex-col px-4 pb-4" style={{ borderRadius: '1.5rem', fontSize: '12px', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.4)', backdropBlur: '10px' }}>
 
                         <div className="flex items-center justify-between mb-1">
                             {/* Icons Column 1 */}
@@ -910,7 +909,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                                 <div className="w-px h-2 bg-white/20" />
                                 <button onClick={() => setQuickSpin(!quickSpin)} className={`text-[9px] font-black tracking-widest ${quickSpin ? 'text-green-400' : 'text-white/20'}`}>QUICK</button>
                                 <div className="w-px h-2 bg-white/20" />
-                                <button className="material-symbols-outlined text-white/40 text-lg">payments</button>
+                                <button className="material-symbols-outlined text-white/60 text-xl">payments</button>
                             </div>
 
                             {/* Icons Column 2 */}
