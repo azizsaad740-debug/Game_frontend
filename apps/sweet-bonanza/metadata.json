@@ -1,0 +1,9 @@
+{
+    "id": "sweet-bonanza",
+    "name": "Sweet Bonanza",
+    "version": "1.0.0",
+    "category": "slots",
+    "minBet": 10,
+    "maxBet": 5000,
+    "rtp": 96.5
+}

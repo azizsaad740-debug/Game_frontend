@@ -1,0 +1,41 @@
+{
+    "id": "sweet-bonanza-1000",
+    "name": "Sweet Bonanza 1000",
+    "version": "1.0.0",
+    "category": "slots",
+    "provider": "Pragmatic Play Style",
+    "minBet": 2,
+    "maxBet": 1000,
+    "rtp": 96.53,
+    "featured": true,
+    "popular": true,
+    "new": true,
+    "description": {
+        "en": "A sugary world of multipliers and tumbling symbols. Pay anywhere and win big in this 6x5 slot!",
+        "tr": "Çarpanlar ve takla atan sembollerle dolu şekerli bir dünya. Bu 6x5 slot oyununda her yerde ödeme al ve büyük kazan!"
+    },
+    "metadata": {
+        "rules": {
+            "en": [
+                "Symbols pay anywhere on the screen.",
+                "The total number of the same symbol on the screen at the end of a spin determines the value of the win.",
+                "Tumble Feature: Winning symbols disappear and new symbols fall from above.",
+                "4 or more Lollipops trigger Free Spins.",
+                "Multiplier symbols up to 1000x can appear during Free Spins."
+            ],
+            "tr": [
+                "Semboller ekranda herhangi bir yerde ödeme yapar.",
+                "Bir dönüşün sonunda ekrandaki aynı sembolün toplam sayısı kazancın değerini belirler.",
+                "Takla Özelliği: Kazanan semboller kaybolur ve yukarıdan yeni semboller düşer.",
+                "4 veya daha fazla Lolipop Ücretsiz Döndürmeyi tetikler.",
+                "Ücretsiz Döndürme sırasında 1000x'e kadar Çarpan sembolleri görünebilir."
+            ]
+        },
+        "features": [
+            "Tumble Feature",
+            "Free Spins",
+            "Multipliers up to 1000x",
+            "Pay Anywhere"
+        ]
+    }
+}

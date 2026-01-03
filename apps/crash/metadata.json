@@ -1,0 +1,43 @@
+{
+    "id": "crash",
+    "name": "Crash",
+    "version": "1.0.0",
+    "author": "In-House",
+    "description": {
+        "en": "Watch the multiplier rise and cash out before it crashes!",
+        "tr": "Çarpanın yükselmesini izleyin ve çökmeden önce nakde çevirin!"
+    },
+    "category": "crash-games",
+    "tags": [
+        "multiplier",
+        "instant",
+        "high-risk"
+    ],
+    "minBet": 10,
+    "maxBet": 10000,
+    "rtp": 97.5,
+    "features": [
+        "Real-time multiplier",
+        "Auto cash-out",
+        "Provably fair",
+        "Live betting history"
+    ],
+    "rules": {
+        "en": [
+            "Place your bet before the round starts",
+            "Watch the multiplier increase",
+            "Cash out before it crashes to win",
+            "If you don't cash out in time, you lose your bet"
+        ],
+        "tr": [
+            "Tur başlamadan önce bahsinizi yerleştirin",
+            "Çarpanın artmasını izleyin",
+            "Kazanmak için çökmeden önce nakde çevirin",
+            "Zamanında nakde çevirmezseniz bahsinizi kaybedersiniz"
+        ]
+    },
+    "howToPlay": {
+        "en": "Place a bet, watch the multiplier rise, and cash out before the crash to multiply your winnings!",
+        "tr": "Bir bahis yapın, çarpanın yükselmesini izleyin ve kazancınızı katlamak için çökmeden önce nakde çevirin!"
+    }
+}

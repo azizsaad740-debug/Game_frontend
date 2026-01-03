@@ -1,0 +1,9 @@
+{
+    "id": "dice-roll-pvp",
+    "name": "Dice Roll PvP",
+    "version": "1.0.0",
+    "category": "dice-games",
+    "minBet": 10,
+    "maxBet": 10000,
+    "rtp": 97.0
+}
