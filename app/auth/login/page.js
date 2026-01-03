@@ -398,6 +398,27 @@ export default function LoginPage() {
                 <span className="material-symbols-outlined mr-2 text-lg">bolt</span>
                 Quick Login (Test)
               </button>
+
+              <button
+                className="flex h-12 w-full items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-center text-sm font-bold text-emerald-400 transition-all hover:bg-emerald-500/20 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                type="button"
+                onClick={() => {
+                  const mockUser = {
+                    id: 'mock-admin-id',
+                    username: 'SuperAdmin_Test',
+                    email: 'superadmin@test.com',
+                    role: 'super_admin',
+                    balance: 999999
+                  };
+                  localStorage.setItem('token', 'mock-token');
+                  localStorage.setItem('user', JSON.stringify(mockUser));
+                  localStorage.setItem('isAdmin', 'true');
+                  window.location.href = '/admin';
+                }}
+              >
+                <span className="material-symbols-outlined mr-2 text-lg">admin_panel_settings</span>
+                Developer Mock Login
+              </button>
             </form>
 
             <div className="mt-6 text-center">
@@ -410,11 +431,11 @@ export default function LoginPage() {
             </div>
           </div>
         </main>
-      </div>
+      </div >
 
       <footer className="absolute bottom-4 left-4 right-4 z-10 text-center">
         <p className="text-xs text-white/50">© 2024 Your Casino. All rights reserved. Please play responsibly.</p>
       </footer>
-    </div>
+    </div >
   )
 }

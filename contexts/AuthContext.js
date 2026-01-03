@@ -12,6 +12,16 @@ export const AuthProvider = ({ children }) => {
   // Fetch logged-in user on initial load
   const loadUser = async () => {
     try {
+      // Check for mock user in localStorage (for testing purposes)
+      const token = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('user');
+
+      if (token === 'mock-token' && savedUser) {
+        setUser(JSON.parse(savedUser));
+        setLoading(false);
+        return;
+      }
+
       const res = await api.get("/auth/me");
       setUser(res.data);
     } catch (err) {
