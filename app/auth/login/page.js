@@ -390,34 +390,24 @@ export default function LoginPage() {
               </button>
 
               <button
-                className="flex h-12 w-full items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-center text-sm font-bold text-primary transition-all hover:bg-primary/20 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                type="button"
-                onClick={handleQuickLogin}
-                disabled={loading}
-              >
-                <span className="material-symbols-outlined mr-2 text-lg">bolt</span>
-                Quick Login (Test)
-              </button>
-
-              <button
-                className="flex h-12 w-full items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-center text-sm font-bold text-emerald-400 transition-all hover:bg-emerald-500/20 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                className="flex h-12 w-full items-center justify-center rounded-lg border border-[#10b981]/30 bg-[#10b981]/10 text-center text-sm font-bold text-[#10b981] transition-all hover:bg-[#10b981]/20 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#10b981]/50"
                 type="button"
                 onClick={() => {
                   const mockUser = {
-                    id: 'mock-admin-id',
-                    username: 'SuperAdmin_Test',
-                    email: 'superadmin@test.com',
-                    role: 'super_admin',
-                    balance: 999999
+                    id: 'mock-user-id',
+                    username: 'TestPlayer',
+                    email: 'testplayer@example.com',
+                    role: 'user',
+                    balance: 10000.00
                   };
                   localStorage.setItem('token', 'mock-token');
                   localStorage.setItem('user', JSON.stringify(mockUser));
-                  localStorage.setItem('isAdmin', 'true');
-                  window.location.href = '/admin';
+                  localStorage.setItem('isAdmin', 'false');
+                  window.location.href = '/dashboard';
                 }}
               >
-                <span className="material-symbols-outlined mr-2 text-lg">admin_panel_settings</span>
-                Developer Mock Login
+                <span className="material-symbols-outlined mr-2 text-lg">rocket_launch</span>
+                Test Login (No API Required)
               </button>
             </form>
 
