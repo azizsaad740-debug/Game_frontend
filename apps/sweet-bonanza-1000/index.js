@@ -756,7 +756,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                 style={{
                     transform: `scale(${gameScale})`,
                     transformOrigin: 'top center',
-                    width: '100%',
+                    width: '512px',
                     maxWidth: '1000px'
                 }}>
 
