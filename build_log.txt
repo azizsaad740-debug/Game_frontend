@@ -1,0 +1,318 @@
+   Ôû▓ Next.js 14.0.4
+   - Environments: .env.local
+   - Experiments (use at your own risk):
+     ┬À optimizeCss
+
+   Creating an optimized production build ...
+ Ô£ô Compiled successfully
+   Linting and checking validity of types ...
+
+Failed to compile.
+
+./app/about/bonus-rules/page.js
+3:8  Warning: 'Link' is defined but never used.  no-unused-vars
+
+./app/about/privacy-policy/page.js
+3:8  Warning: 'Link' is defined but never used.  no-unused-vars
+
+./app/about/responsible-gaming/page.js
+3:8  Warning: 'Link' is defined but never used.  no-unused-vars
+
+./app/admin/betting/page.js
+13:9  Warning: 'pathname' is assigned a value but never used.  no-unused-vars
+16:10  Warning: 'dateRangeFilter' is assigned a value but never used.  no-unused-vars
+16:27  Warning: 'setDateRangeFilter' is assigned a value but never used.  no-unused-vars
+34:7  Warning: 'navItems' is assigned a value but never used.  no-unused-vars
+49:6  Warning: React Hook useEffect has a missing dependency: 'fetchBets'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+464:35  Warning: Unexpected console statement.  no-console
+
+./app/admin/content/page.js
+4:8  Warning: 'Link' is defined but never used.  no-unused-vars
+9:22  Warning: 'formatDateTime' is defined but never used.  no-unused-vars
+13:9  Warning: 'pathname' is assigned a value but never used.  no-unused-vars
+51:7  Warning: 'navItems' is assigned a value but never used.  no-unused-vars
+73:6  Warning: React Hook useEffect has a missing dependency: 'fetchContent'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+394:41  Warning: Unexpected console statement.  no-console
+
+./app/admin/deposits/page.js
+4:8  Warning: 'Link' is defined but never used.  no-unused-vars
+15:9  Warning: 'pathname' is assigned a value but never used.  no-unused-vars
+40:6  Warning: React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/dice-games/page.js
+10:10  Warning: 'formatDate' is defined but never used.  no-unused-vars
+13:11  Warning: 't' is assigned a value but never used.  no-unused-vars
+14:9  Warning: 'router' is assigned a value but never used.  no-unused-vars
+
+./app/admin/finances/page.js
+35:10  Warning: 'minAmount' is assigned a value but never used.  no-unused-vars
+36:10  Warning: 'maxAmount' is assigned a value but never used.  no-unused-vars
+60:6  Warning: React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/games/page.js
+4:8  Warning: 'Link' is defined but never used.  no-unused-vars
+13:9  Warning: 'pathname' is assigned a value but never used.  no-unused-vars
+84:7  Warning: 'navItems' is assigned a value but never used.  no-unused-vars
+104:6  Warning: React Hook useEffect has a missing dependency: 'fetchGames'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+179:13  Warning: 'stats' is assigned a value but never used.  no-unused-vars
+
+./app/admin/ibans/page.js
+12:9  Warning: 'router' is assigned a value but never used.  no-unused-vars
+31:6  Warning: React Hook useEffect has a missing dependency: 'fetchIbans'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/kyc/page.js
+4:8  Warning: 'Link' is defined but never used.  no-unused-vars
+13:9  Warning: 'pathname' is assigned a value but never used.  no-unused-vars
+27:9  Warning: 'navItems' is assigned a value but never used.  no-unused-vars
+42:6  Warning: React Hook useEffect has a missing dependency: 'loadKYC'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/page.js
+4:8  Warning: 'Link' is defined but never used.  no-unused-vars
+20:3  Warning: 'LineChart' is defined but never used.  no-unused-vars
+33:11  Warning: 't' is assigned a value but never used.  no-unused-vars
+34:9  Warning: 'pathname' is assigned a value but never used.  no-unused-vars
+
+./app/admin/promotions/page.js
+4:8  Warning: 'Link' is defined but never used.  no-unused-vars
+13:9  Warning: 'pathname' is assigned a value but never used.  no-unused-vars
+56:7  Warning: 'navItems' is assigned a value but never used.  no-unused-vars
+71:6  Warning: React Hook useEffect has a missing dependency: 'fetchPromotions'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/rounds/page.js
+56:6  Warning: React Hook useEffect has missing dependencies: 'actionLoading' and 'fetchRounds'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/support/page.js
+54:6  Warning: React Hook useEffect has a missing dependency: 'fetchTickets'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/tournaments/page.js
+647:8  Warning: 'Link' is defined but never used.  no-unused-vars
+664:9  Warning: 'pathname' is assigned a value but never used.  no-unused-vars
+668:10  Warning: 'saving' is assigned a value but never used.  no-unused-vars
+668:18  Warning: 'setSaving' is assigned a value but never used.  no-unused-vars
+669:10  Warning: 'error' is assigned a value but never used.  no-unused-vars
+670:10  Warning: 'success' is assigned a value but never used.  no-unused-vars
+670:19  Warning: 'setSuccess' is assigned a value but never used.  no-unused-vars
+673:23  Warning: 'setSearchQuery' is assigned a value but never used.  no-unused-vars
+674:24  Warning: 'setStatusFilter' is assigned a value but never used.  no-unused-vars
+675:26  Warning: 'setGameTypeFilter' is assigned a value but never used.  no-unused-vars
+676:23  Warning: 'setCurrentPage' is assigned a value but never used.  no-unused-vars
+677:10  Warning: 'totalPages' is assigned a value but never used.  no-unused-vars
+678:10  Warning: 'total' is assigned a value but never used.  no-unused-vars
+681:10  Warning: 'showAddModal' is assigned a value but never used.  no-unused-vars
+682:10  Warning: 'showEditModal' is assigned a value but never used.  no-unused-vars
+683:10  Warning: 'showDeleteModal' is assigned a value but never used.  no-unused-vars
+683:27  Warning: 'setShowDeleteModal' is assigned a value but never used.  no-unused-vars
+684:10  Warning: 'selectedTournament' is assigned a value but never used.  no-unused-vars
+687:10  Warning: 'formData' is assigned a value but never used.  no-unused-vars
+706:9  Warning: 'gameTypes' is assigned a value but never used.  no-unused-vars
+714:9  Warning: 'statusOptions' is assigned a value but never used.  no-unused-vars
+723:6  Warning: React Hook useEffect has a missing dependency: 'fetchTournaments'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/users/page.js
+4:8  Warning: 'Link' is defined but never used.  no-unused-vars
+8:10  Warning: 'formatDate' is defined but never used.  no-unused-vars
+8:22  Warning: 'formatDateTime' is defined but never used.  no-unused-vars
+10:10  Warning: 'mockAdminUsers' is defined but never used.  no-unused-vars
+10:26  Warning: 'simulateApiDelay' is defined but never used.  no-unused-vars
+15:11  Warning: 't' is assigned a value but never used.  no-unused-vars
+16:9  Warning: 'pathname' is assigned a value but never used.  no-unused-vars
+17:23  Warning: 'setCurrentPage' is assigned a value but never used.  no-unused-vars
+18:23  Warning: 'setSearchQuery' is assigned a value but never used.  no-unused-vars
+19:24  Warning: 'setStatusFilter' is assigned a value but never used.  no-unused-vars
+20:22  Warning: 'setDateFilter' is assigned a value but never used.  no-unused-vars
+25:10  Warning: 'totalPages' is assigned a value but never used.  no-unused-vars
+27:10  Warning: 'selectedUser' is assigned a value but never used.  no-unused-vars
+28:10  Warning: 'showStatusModal' is assigned a value but never used.  no-unused-vars
+29:10  Warning: 'newStatus' is assigned a value but never used.  no-unused-vars
+31:10  Warning: 'showBulkModal' is assigned a value but never used.  no-unused-vars
+33:10  Warning: 'showDateRange' is assigned a value but never used.  no-unused-vars
+33:25  Warning: 'setShowDateRange' is assigned a value but never used.  no-unused-vars
+34:21  Warning: 'setStartDate' is assigned a value but never used.  no-unused-vars
+35:19  Warning: 'setEndDate' is assigned a value but never used.  no-unused-vars
+40:6  Warning: React Hook useEffect has a missing dependency: 'fetchUsers'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+111:9  Warning: 'startResult' is assigned a value but never used.  no-unused-vars
+112:9  Warning: 'endResult' is assigned a value but never used.  no-unused-vars
+114:9  Warning: 'handleStatusChange' is assigned a value but never used.  no-unused-vars
+148:9  Warning: 'handleBulkStatusUpdate' is assigned a value but never used.  no-unused-vars
+
+./app/admin/withdrawals/page.js
+4:8  Warning: 'Link' is defined but never used.  no-unused-vars
+15:9  Warning: 'pathname' is assigned a value but never used.  no-unused-vars
+35:31  Warning: 'setPaymentMethodFilter' is assigned a value but never used.  no-unused-vars
+45:6  Warning: React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/auth/forgot-password/page.js
+9:11  Warning: 't' is assigned a value but never used.  no-unused-vars
+
+./app/auth/login/page.js
+202:9  Warning: 'router' is assigned a value but never used.  no-unused-vars
+
+./app/auth/register/page.js
+74:7  Warning: Unexpected console statement.  no-console
+75:7  Warning: Unexpected console statement.  no-console
+
+./app/bet-rounds/page.js
+5:8  Warning: 'Link' is defined but never used.  no-unused-vars
+14:11  Warning: 't' is assigned a value but never used.  no-unused-vars
+15:9  Warning: 'router' is assigned a value but never used.  no-unused-vars
+31:6  Warning: React Hook useEffect has missing dependencies: 'fetchBetRounds' and 'fetchStatistics'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+83:9  Warning: 'formatMultiplier' is assigned a value but never used.  no-unused-vars
+
+./app/dashboard/page.js
+8:8  Warning: 'LanguageSwitcher' is defined but never used.  no-unused-vars
+17:3  Warning: 'getMockData' is defined but never used.  no-unused-vars
+29:10  Warning: 'activeBonuses' is assigned a value but never used.  no-unused-vars
+196:32  Warning: 'user' is defined but never used. Allowed unused args must match /^_/u.  no-unused-vars
+505:33  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/deposit/page.js
+6:8  Warning: 'Link' is defined but never used.  no-unused-vars
+23:10  Warning: 'bankInfo' is assigned a value but never used.  no-unused-vars
+216:33  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+269:35  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/games/page.js
+10:5  Warning: 'getGamesByCategory' is defined but never used.  no-unused-vars
+11:5  Warning: 'getGamesByProvider' is defined but never used.  no-unused-vars
+16:13  Warning: 't' is assigned a value but never used.  no-unused-vars
+141:37  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/help/contact/page.js
+4:8  Warning: 'Link' is defined but never used.  no-unused-vars
+12:11  Warning: 't' is assigned a value but never used.  no-unused-vars
+
+./app/help/faq/page.js
+11:11  Warning: 't' is assigned a value but never used.  no-unused-vars
+
+./app/layout.js
+33:9  Warning: Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
+38:9  Warning: A font-display parameter is missing (adding `&display=optional` is recommended). See: https://nextjs.org/docs/messages/google-font-display  @next/next/google-font-display
+38:9  Warning: Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
+
+./app/live-betting/page.js
+4:8  Warning: 'Link' is defined but never used.  no-unused-vars
+32:6  Warning: React Hook useEffect has missing dependencies: 'fetchMatches' and 't'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+306:39  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/more/page.js
+3:10  Warning: 'useState' is defined but never used.  no-unused-vars
+
+./app/page.js
+23:6  Warning: React Hook useEffect has a missing dependency: 'nextSlide'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+96:9  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+104:67  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+154:7  Warning: 'LiveWinnersTicker' is assigned a value but never used.  no-unused-vars
+200:10  Warning: 'isVisible' is assigned a value but never used.  no-unused-vars
+201:10  Warning: 'paymentMethods' is assigned a value but never used.  no-unused-vars
+202:10  Warning: 'gameProviders' is assigned a value but never used.  no-unused-vars
+203:10  Warning: 'loadingPaymentMethods' is assigned a value but never used.  no-unused-vars
+204:10  Warning: 'loadingProviders' is assigned a value but never used.  no-unused-vars
+281:6  Warning: React Hook useEffect has a missing dependency: 'defaultPaymentMethods'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+289:6  Warning: React Hook useEffect has a missing dependency: 'defaultGameProviders'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+390:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+424:27  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+498:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+520:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/play/_legacy_[id]/page.js
+17:12  Warning: 'user' is assigned a value but never used.  no-unused-vars
+19:12  Warning: 'loading' is assigned a value but never used.  no-unused-vars
+
+./app/profile/page.js
+33:10  Warning: 'showKYCSection' is assigned a value but never used.  no-unused-vars
+33:26  Warning: 'setShowKYCSection' is assigned a value but never used.  no-unused-vars
+
+./app/promotions/page.js
+4:8  Warning: 'Link' is defined but never used.  no-unused-vars
+20:10  Warning: 'total' is assigned a value but never used.  no-unused-vars
+27:6  Warning: React Hook useEffect has a missing dependency: 'fetchPromotions'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+236:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+422:15  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/promotions/[id]/page.js
+13:9  Warning: 'router' is assigned a value but never used.  no-unused-vars
+25:6  Warning: React Hook useEffect has a missing dependency: 'fetchPromotion'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+172:15  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/reset-password/page.js
+10:11  Warning: 't' is assigned a value but never used.  no-unused-vars
+
+./app/slots/page.js
+161:17  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+230:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+255:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+293:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+314:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/sports/page.js
+26:6  Warning: React Hook useEffect has a missing dependency: 'fetchMatches'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+189:9  Warning: 'totalStake' is assigned a value but never used.  no-unused-vars
+352:46  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+369:33  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/stats/results/page.js
+4:8  Warning: 'Link' is defined but never used.  no-unused-vars
+
+./app/stats/statistics/page.js
+4:8  Warning: 'Link' is defined but never used.  no-unused-vars
+7:26  Warning: 'mockBets' is defined but never used.  no-unused-vars
+
+./app/terms/general/page.js
+3:8  Warning: 'Link' is defined but never used.  no-unused-vars
+
+./app/terms/sports-betting/page.js
+3:8  Warning: 'Link' is defined but never used.  no-unused-vars
+
+./app/tournaments/page.js
+5:8  Warning: 'Link' is defined but never used.  no-unused-vars
+21:10  Warning: 'total' is assigned a value but never used.  no-unused-vars
+26:6  Warning: React Hook useEffect has a missing dependency: 'fetchTournaments'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+168:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/transactions/page.js
+7:10  Warning: 'formatDate' is defined but never used.  no-unused-vars
+7:22  Warning: 'formatDateTime' is defined but never used.  no-unused-vars
+7:38  Warning: 'formatAmount' is defined but never used.  no-unused-vars
+11:9  Warning: 'router' is assigned a value but never used.  no-unused-vars
+14:10  Warning: 'error' is assigned a value but never used.  no-unused-vars
+23:6  Warning: React Hook useEffect has a missing dependency: 'fetchTransactions'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+82:9  Warning: 'getStatusColor' is assigned a value but never used.  no-unused-vars
+
+./app/tv-games/page.js
+107:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/withdraw/page.js
+27:6  Warning: React Hook useEffect has a missing dependency: 'fetchUser'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/DynamicGameLoader.js
+36:26  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+36:37  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+97:9  Warning: Unexpected console statement.  no-console
+102:9  Warning: Unexpected console statement.  no-console
+105:34  Warning: 'newBalance' is defined but never used. Allowed unused args must match /^_/u.  no-unused-vars
+
+./components/Footer.js
+55:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+56:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+57:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+58:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+59:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+60:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+61:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+62:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+63:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+64:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+65:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+66:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+67:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+68:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+69:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./components/NotificationDropdown.js
+5:10  Warning: 'formatDate' is defined but never used.  no-unused-vars
+
+./lib/api/index.js
+61:5  Warning: Unexpected console statement.  no-console
+64:5  Warning: Unexpected console statement.  no-console
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules

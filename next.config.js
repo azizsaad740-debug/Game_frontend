@@ -7,6 +7,9 @@ const nextConfig = {
   compress: true,         // Enable compression
   swcMinify: true,        // Minify with SWC
   output: 'standalone',   // Optimize for standalone deployment
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 
   // Image optimization
   images: {

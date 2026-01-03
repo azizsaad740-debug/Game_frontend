@@ -33,7 +33,7 @@ const GameError = ({ error, gameSlug }) => (
             </div>
             <h2 className="text-white text-2xl font-bold mb-2">Game Not Found</h2>
             <p className="text-text-secondary mb-4">
-                The game "{gameSlug}" could not be loaded.
+                The game &quot;{gameSlug}&quot; could not be loaded.
             </p>
             {error && (
                 <p className="text-red-400 text-sm mb-4 font-mono bg-black/30 p-3 rounded">

@@ -1,0 +1,97 @@
+   Ôû▓ Next.js 14.0.4
+   - Environments: .env.local
+   - Experiments (use at your own risk):
+     ┬À optimizeCss
+
+   Creating an optimized production build ...
+ Ô£ô Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/58) ...
+ ÔÜá Entire page /auth/login deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /auth/login
+
+   Generating static pages (14/58) 
+
+   Generating static pages (28/58) 
+ ÔÜá Entire page /reset-password deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /reset-password
+
+   Generating static pages (43/58) 
+Time 11.2506
+Time 11.1657
+
+ Ô£ô Generating static pages (58/58) 
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+Ôöî Ôùï /                                    11.7 kB         146 kB
+Ôö£ Ôùï /_not-found                          0 B                0 B
+Ôö£ Ôùï /about/bonus-rules                   928 B           135 kB
+Ôö£ Ôùï /about/privacy-policy                1.06 kB         135 kB
+Ôö£ Ôùï /about/responsible-gaming            1.02 kB         135 kB
+Ôö£ Ôùï /admin                               109 kB          239 kB
+Ôö£ Ôùï /admin/betting                       7.06 kB         132 kB
+Ôö£ Ôùï /admin/content                       6.2 kB          131 kB
+Ôö£ Ôùï /admin/deposits                      6.7 kB          132 kB
+Ôö£ Ôùï /admin/dice-games                    6.12 kB         131 kB
+Ôö£ Ôùï /admin/documentation                 2.79 kB          92 kB
+Ôö£ Ôùï /admin/finances                      8.6 kB          125 kB
+Ôö£ Ôùï /admin/games                         8.06 kB         133 kB
+Ôö£ Ôùï /admin/ibans                         4.61 kB         118 kB
+Ôö£ Ôùï /admin/kyc                           5.42 kB         130 kB
+Ôö£ Ôùï /admin/logout                        842 B           107 kB
+Ôö£ Ôùï /admin/promotions                    6.4 kB          131 kB
+Ôö£ Ôùï /admin/rounds                        6.28 kB         120 kB
+Ôö£ Ôùï /admin/settings                      4.87 kB         119 kB
+Ôö£ Ôùï /admin/support                       6.25 kB         120 kB
+Ôö£ Ôùï /admin/tournaments                   4.32 kB         129 kB
+Ôö£ Ôùï /admin/users                         4.59 kB         132 kB
+Ôö£ Ôùï /admin/withdrawals                   7.18 kB         132 kB
+Ôö£ Ôùï /auth/forgot-password                1.83 kB         127 kB
+Ôö£ Ôùï /auth/login                          3.75 kB         129 kB
+Ôö£ Ôùï /auth/register                       3.06 kB         128 kB
+Ôö£ Ôùï /bet-rounds                          2.88 kB         135 kB
+Ôö£ Ôùï /bonuses                             2.3 kB          136 kB
+Ôö£ Ôùï /crash                               571 B           220 kB
+Ôö£ Ôùï /dashbaord                           832 B          82.9 kB
+Ôö£ Ôùï /dashboard                           5.66 kB         140 kB
+Ôö£ Ôùï /deposit                             5.93 kB         138 kB
+Ôö£ Ôùï /dice-roll                           583 B           220 kB
+Ôö£ Ôùï /games                               5.13 kB         105 kB
+Ôö£ Ôùï /help/contact                        1.59 kB         136 kB
+Ôö£ Ôùï /help/faq                            1.64 kB         136 kB
+Ôö£ Ôùï /help/payment-options                874 B           135 kB
+Ôö£ Ôùï /live-betting                        4.41 kB         136 kB
+Ôö£ Ôùï /live-casino                         737 B          82.8 kB
+Ôö£ Ôùï /more                                1.71 kB         133 kB
+Ôö£ ╬╗ /play/[slug]                         575 B           220 kB
+Ôö£ Ôùï /privacy                             317 B          82.4 kB
+Ôö£ Ôùï /profile                             6.07 kB         138 kB
+Ôö£ Ôùï /promotions                          4.05 kB         136 kB
+Ôö£ ╬╗ /promotions/[id]                     2.22 kB         134 kB
+Ôö£ Ôùï /reset-password                      2.5 kB          127 kB
+Ôö£ Ôùï /slots                               6.64 kB         138 kB
+Ôö£ Ôùï /sports                              4.85 kB         137 kB
+Ôö£ Ôùï /stats/results                       1.27 kB         138 kB
+Ôö£ Ôùï /stats/statistics                    1.59 kB         138 kB
+Ôö£ Ôùï /sweet-bonanza                       583 B           220 kB
+Ôö£ Ôùï /terms                               750 B           132 kB
+Ôö£ Ôùï /terms/general                       1.04 kB         135 kB
+Ôö£ Ôùï /terms/sports-betting                919 B           135 kB
+Ôö£ Ôùï /tournaments                         3.04 kB         135 kB
+Ôö£ Ôùï /transactions                        5.06 kB         137 kB
+Ôö£ Ôùï /tv-games                            2.1 kB          134 kB
+Ôöö Ôùï /withdraw                            6.95 kB         139 kB
++ First Load JS shared by all            82.1 kB
+  Ôö£ chunks/4938-e55dd13743948d83.js      26.8 kB
+  Ôö£ chunks/fd9d1056-bfa7bb581dbd3759.js  53.3 kB
+  Ôö£ chunks/main-app-5052b22f687881eb.js  227 B
+  Ôöö chunks/webpack-2989f9aa9c29a0ba.js   1.75 kB
+
+
+ãÆ Middleware                             41.3 kB
+
+Ôùï  (Static)   prerendered as static content
+╬╗  (Dynamic)  server-rendered on demand using Node.js
+

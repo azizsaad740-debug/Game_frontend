@@ -101,7 +101,7 @@ const PromotionModal = ({ isOpen, onClose }) => {
 
         <div className="p-6 text-center">
           <h3 className="text-2xl font-black text-white mb-2">Haftalık %25 Kayıp Bonusu!</h3>
-          <p className="text-white/70 mb-6">Tüm kayıplarınızın %25'i her Pazartesi anında hesabınızda.</p>
+          <p className="text-white/70 mb-6">Tüm kayıplarınızın %25&apos;i her Pazartesi anında hesabınızda.</p>
 
           <div className="flex flex-col gap-4">
             <button
@@ -206,19 +206,19 @@ export default function HomePage() {
 
   const banners = [
     {
-      url: 'file:///C:/Users/Saada/.gemini/antigravity/brain/2f4400fc-ab13-430a-8cf0-c35f6971832d/sports_betting_banner_1767128036161.png',
+      url: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e96e?w=1200',
       tagline: 'SPOR BAHİSLERİ',
       title: 'En Yüksek Oranlarla Kazanmaya Başla!',
       link: '/sports'
     },
     {
-      url: 'file:///C:/Users/Saada/.gemini/antigravity/brain/2f4400fc-ab13-430a-8cf0-c35f6971832d/live_casino_banner_1767128051180.png',
+      url: 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?w=1200',
       tagline: 'CANLI CASINO',
       title: 'Gerçek Kurpiyerler ile Eşsiz Bir Deneyim',
       link: '/play/crazy-time'
     },
     {
-      url: 'file:///C:/Users/Saada/.gemini/antigravity/brain/2f4400fc-ab13-430a-8cf0-c35f6971832d/slot_games_banner_1767128068288.png',
+      url: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200',
       tagline: 'SLOT OYUNLARI',
       title: '%30 Kayıp Bonusu ile Slotlarda Şansını Dene',
       link: '/play/sweet-bonanza'
@@ -308,11 +308,11 @@ export default function HomePage() {
   }, [])
 
   const gameCategories = [
-    { id: 'sports', title: 'SPOR BAHİSLERİ', image: 'file:///C:/Users/Saada/.gemini/antigravity/brain/2f4400fc-ab13-430a-8cf0-c35f6971832d/sports_betting_banner_1767128036161.png' },
-    { id: 'crazy-time', title: 'CANLI CASINO', image: 'file:///C:/Users/Saada/.gemini/antigravity/brain/2f4400fc-ab13-430a-8cf0-c35f6971832d/live_casino_banner_1767128051180.png' },
-    { id: 'sweet-bonanza', title: 'SLOT OYUNLARI', image: 'file:///C:/Users/Saada/.gemini/antigravity/brain/2f4400fc-ab13-430a-8cf0-c35f6971832d/slot_games_banner_1767128068288.png' },
-    { id: 'aviator', title: 'AVIATOR', image: 'file:///C:/Users/Saada/.gemini/antigravity/brain/2f4400fc-ab13-430a-8cf0-c35f6971832d/aviator_game_card_1767128157076.png' },
-    { id: 'zeppelin', title: 'ZEPPELIN', image: 'file:///C:/Users/Saada/.gemini/antigravity/brain/2f4400fc-ab13-430a-8cf0-c35f6971832d/zeppelin_game_card_1767128173215.png' },
+    { id: 'sports', title: 'SPOR BAHİSLERİ', image: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e96e?w=800' },
+    { id: 'crazy-time', title: 'CANLI CASINO', image: 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?w=800' },
+    { id: 'sweet-bonanza', title: 'SLOT OYUNLARI', image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+    { id: 'aviator', title: 'AVIATOR', image: 'https://images.unsplash.com/photo-1564683214965-3619addd900d?w=800' },
+    { id: 'zeppelin', title: 'ZEPPELIN', image: 'https://images.unsplash.com/photo-1494022299300-899b96e49893?w=800' },
   ]
 
   const trendingGames = [
