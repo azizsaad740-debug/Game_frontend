@@ -252,7 +252,7 @@ const WinCelebration = ({ amount }) => {
             <div className="relative z-50 flex flex-col items-center animate-match-pop">
                 {/* 3D Stylized Tiered Win Text */}
                 <div className="relative group flex flex-col items-center">
-                    <h2 className={`text-[100px] md:text-[180px] font-black italic tracking-tighter leading-none px-12 py-6 text-center
+                    <h2 className={`text-[70px] md:text-[120px] font-black italic tracking-tighter leading-none px-12 py-6 text-center
                         bg-gradient-to-b ${amount > 500 ? 'from-yellow-100 via-yellow-400 to-red-600' : 'from-pink-100 via-pink-400 to-purple-600'} bg-clip-text text-transparent
                         drop-shadow-[0_10px_0_#991b1b] animate-neon-glow-text w-full
                     `}>
@@ -271,7 +271,7 @@ const WinCelebration = ({ amount }) => {
 
                 {/* Win Amount with Glossy Plate */}
                 <div className="mt-[-20px] bg-gradient-to-b from-pink-500 to-pink-700 px-12 py-4 rounded-3xl border-4 border-white/20 shadow-2xl flex flex-col items-center skew-x-[-10deg]">
-                    <span className="text-white text-4xl md:text-6xl font-black italic drop-shadow-lg tracking-tighter flex items-center gap-4">
+                    <span className="text-white text-3xl md:text-5xl font-black italic drop-shadow-lg tracking-tighter flex items-center gap-4">
                         <span className="text-yellow-400">₺</span>
                         {amount.toLocaleString()}
                     </span>
@@ -362,7 +362,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
             const width = window.innerWidth
             const height = window.innerHeight
 
-            const targetWidth = 480
+            const targetWidth = 445
             const targetHeight = 850
 
             const scaleW = width / targetWidth
@@ -1020,7 +1020,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
                     <div className="absolute inset-0 bg-black/50 animate-fade-in"></div>
                     <div className="relative text-center animate-bounce-premium">
-                        <div className="text-6xl md:text-8xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-200 to-blue-400 drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+                        <div className="text-5xl md:text-7xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-200 to-blue-400 drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
                             BETTER LUCK <br /> NEXT TIME!
                         </div>
                         <div className="mt-8 text-7xl md:text-9xl animate-pulse filter drop-shadow-lg">
