@@ -789,9 +789,9 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                     <div className="flex flex-col items-center shrink min-h-0 scale-105 lg:scale-110">
                         {/* Central Grid Container */}
                         <div className="relative bg-blue-400/20 backdrop-blur-xl rounded-[3rem] p-4 md:p-8 border-4 border-white/30 shadow-2xl ring-1 ring-blue-400/50 animate-neon-pulsate shrink min-h-0">
-                            <div className="grid grid-cols-6 gap-3 md:gap-5 bg-black/70 rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-inner border border-white/10 shrink min-h-0">
+                            <div className="grid grid-cols-6 gap-3 md:gap-5 bg-black/70 rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-inner border border-white/10 shrink min-h-0" style={{ width: '453px', height: '414px' }}>
                                 {grid.map((symbol, idx) => (
-                                    <div key={idx} className={`relative w-14 h-14 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 flex items-center justify-center transition-all duration-500 ${droppingIndices.includes(idx) ? 'animate-drop-in' : ''} ${winningSymbols.includes(idx) ? 'animate-match-pop z-20' : ''}`}>
+                                    <div key={idx} className={`relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center transition-all duration-500 ${droppingIndices.includes(idx) ? 'animate-drop-in' : ''} ${winningSymbols.includes(idx) ? 'animate-match-pop z-20' : ''}`}>
                                         {symbol && (
                                             <div className="w-full h-full flex items-center justify-center">
                                                 <img src={symbol.image} alt={symbol.id} className={`w-[98%] h-[98%] object-contain drop-shadow-[0_6px_12px_rgba(0,0,0,0.5)] ${winningSymbols.includes(idx) ? 'animate-glow-pulse scale-110' : ''}`} />
@@ -813,11 +813,11 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
 
                     {/* Mobile Only: Buy Actions Row */}
                     <div className="lg:hidden flex gap-2 w-full px-4 overflow-x-auto pb-2">
-                        <button onClick={() => handleBuyFreeSpins('regular')} className="bg-[#b91c1c] border border-[#fcd34d] px-4 py-2 rounded-xl flex-1 shrink-0 min-w-[140px]">
+                        <button onClick={() => handleBuyFreeSpins('regular')} className="bg-[#b91c1c] border border-[#fcd34d] px-4 py-2 rounded-xl flex-1 shrink-0 min-w-[140px]" style={{ width: '187px', height: '36px' }}>
                             <span className="text-[8px] font-black text-white uppercase block mb-0.5">BUY FS</span>
                             <span className="text-sm font-black text-white italic">₺ {(betAmount * 100).toLocaleString()}</span>
                         </button>
-                        <button onClick={() => handleBuyFreeSpins('super')} className="bg-[#ea580c] border border-[#fcd34d] px-4 py-2 rounded-xl flex-1 shrink-0 min-w-[140px]">
+                        <button onClick={() => handleBuyFreeSpins('super')} className="bg-[#ea580c] border border-[#fcd34d] px-4 py-2 rounded-xl flex-1 shrink-0 min-w-[140px]" style={{ width: '187px', height: '36px' }}>
                             <span className="text-[8px] font-black text-white uppercase block mb-0.5">SUPER BUY</span>
                             <span className="text-sm font-black text-white italic">₺ {(betAmount * 500).toLocaleString()}</span>
                         </button>
@@ -867,7 +867,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                     </div>
 
                     {/* Bottom Control Bar Bar */}
-                    <div className="w-full max-w-6xl mx-auto flex flex-col px-4 pb-2">
+                    <div className="w-full max-w-6xl mx-auto flex flex-col px-4 pb-2" style={{ borderRadius: '16px', fontSize: '11px', borderWidth: '0px', borderStyle: 'solid' }}>
 
                         <div className="flex items-center justify-between mb-1">
                             {/* Icons Column 1 */}
