@@ -362,21 +362,16 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
             const width = window.innerWidth
             const height = window.innerHeight
 
-            // Desktop view optimization: If height is small, scale down.
-            // But don't force mobile-like narrowness on large screens.
-            const availableHeight = height - 40 // Compact margin
-            const gameOriginalHeight = 850 // More realistic height for desktop grid + controls
+            // Higher quality scaling: Determine scale based on the most restrictive dimension
+            const targetWidth = 600  // Base design width
+            const targetHeight = 900 // Base design height
 
-            if (width >= 1024) {
-                // For desktop, we want to maximize the grid
-                const scaleH = Math.min(1.1, availableHeight / gameOriginalHeight)
-                setGameScale(scaleH)
-            } else {
-                // Mobile scaling
-                const scaleH = Math.min(1, availableHeight / gameOriginalHeight)
-                const scaleW = Math.min(1, (width - 20) / 450)
-                setGameScale(Math.min(scaleH, scaleW))
-            }
+            const scaleW = width / targetWidth
+            const scaleH = height / targetHeight
+
+            // Use the smaller scale to ensure everything fits (Contain/Fit)
+            const finalScale = Math.min(1.1, Math.min(scaleW, scaleH))
+            setGameScale(finalScale)
         }
 
         handleResize()
@@ -745,7 +740,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
     if (pageLoading) return <PragmaticLoading progress={loadingProgress} />
 
     return (
-        <div className="min-h-screen bg-[#0f172a] text-white flex flex-col font-sans overflow-hidden select-none">
+        <div className="min-h-screen bg-[#0f172a] text-white flex flex-col font-sans overflow-y-auto select-none">
             {/* Background Decor - Matches Candy/Sweet landscape in images */}
             <div
                 className="fixed inset-0 bg-cover bg-center pointer-events-none opacity-60 scale-110"
@@ -758,15 +753,12 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
             {/* Header Bar - Removed for maximum space */}
 
             {/* Main Game Area */}
-            <div className={`relative z-10 h-full flex flex-col items-center p-2 md:p-6 pb-0 overflow-hidden w-full`}
+            <div className={`relative z-10 flex-1 flex flex-col items-center p-2 md:p-6 pb-0 w-full`}
                 style={{
                     transform: `scale(${gameScale})`,
                     transformOrigin: 'top center',
-                    height: '905px',
-                    maxWidth: '566px',
-                    position: 'relative',
-                    top: '10px',
-                    left: '-10px'
+                    width: '100%',
+                    maxWidth: '1000px'
                 }}>
 
                 {/* Top Banner - Logo & Info (Image 2) */}
@@ -802,7 +794,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                 </div>
 
                 {/* Content Area: Grid + Sidebars for space efficiency on Desktop */}
-                <div className="w-full flex-1 flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-10 overflow-hidden my-auto" style={{ position: 'relative', left: '-10px', minHeight: '620px' }}>
+                <div className="w-full flex-1 flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-10 overflow-hidden my-auto">
 
                     {/* Left Sidebar: Buy Features */}
                     <div className="hidden lg:flex flex-col gap-3">
@@ -819,8 +811,8 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                     {/* Central Area: Grid */}
                     <div className="flex flex-col items-center shrink min-h-0 scale-105 lg:scale-110">
                         {/* Central Grid Container */}
-                        <div className="relative bg-blue-400/20 backdrop-blur-xl rounded-[3rem] p-4 md:p-8 border-4 border-white/30 shadow-2xl ring-1 ring-blue-400/50 animate-neon-pulsate shrink min-h-0" style={{ borderWidth: '0px', borderStyle: 'solid', borderRadius: '23px', position: 'relative', top: '14px' }}>
-                            <div className="grid grid-cols-6 gap-3 md:gap-5 bg-black/70 rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-inner border border-white/10 shrink min-h-0" style={{ width: '453px', height: '414px' }}>
+                        <div className="relative bg-blue-400/20 backdrop-blur-xl rounded-[3rem] p-4 md:p-8 border-4 border-white/30 shadow-2xl ring-1 ring-blue-400/50 animate-neon-pulsate shrink min-h-0" style={{ borderWidth: '0px', borderStyle: 'solid', borderRadius: '23px' }}>
+                            <div className="grid grid-cols-6 gap-3 md:gap-5 bg-black/70 rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-inner border border-white/10 shrink min-h-0">
                                 {grid.map((symbol, idx) => (
                                     <div key={idx} className={`relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center transition-all duration-500 ${droppingIndices.includes(idx) ? 'animate-drop-in' : ''} ${winningSymbols.includes(idx) ? 'animate-match-pop z-20' : ''}`}>
                                         {symbol && (
@@ -870,10 +862,10 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                 </div>
 
                 {/* Bottom Consolidated Section: Exact Reference Layout (Reduced size by 25%) */}
-                <div className="w-full shrink-0 flex flex-col items-center bg-black/25 backdrop-blur-3xl border-t border-white/10 mt-auto scale-90 lg:scale-[0.8] origin-bottom" style={{ position: 'relative', top: '79px', borderRadius: '15px', height: '199px' }}>
+                <div className="w-full shrink-0 flex flex-col items-center bg-black/25 backdrop-blur-3xl border-t border-white/10 mt-auto scale-90 lg:scale-[0.8] origin-bottom" style={{ borderRadius: '15px' }}>
 
                     {/* Spin Row with +/- */}
-                    <div className="flex items-center justify-center gap-4 py-3 md:py-4 w-full" style={{ position: 'relative', top: '-112px', height: '84px' }}>
+                    <div className="flex items-center justify-center gap-4 py-3 md:py-4 w-full">
                         <button onClick={() => adjustBet(-0.50)} className="w-10 h-10 flex items-center justify-center bg-white/10 rounded-full border border-white/20 text-white hover:bg-white/30 transition-all active:scale-90">
                             <span className="material-symbols-outlined text-2xl font-black">remove</span>
                         </button>
@@ -899,7 +891,7 @@ export default function SweetBonanza1000({ isLauncher = false, gameInfo }) {
                     </div>
 
                     {/* Bottom Control Bar Bar */}
-                    <div className="w-full max-w-6xl mx-auto flex flex-col px-4 pb-2" style={{ borderRadius: '16px', fontSize: '11px', borderWidth: '0px', borderStyle: 'solid', position: 'relative', left: '0px', top: '-85px' }}>
+                    <div className="w-full max-w-6xl mx-auto flex flex-col px-4 pb-2" style={{ borderRadius: '16px', fontSize: '11px', borderWidth: '0px', borderStyle: 'solid' }}>
 
                         <div className="flex items-center justify-between mb-1">
                             {/* Icons Column 1 */}
