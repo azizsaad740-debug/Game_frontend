@@ -17,6 +17,7 @@ const PragmaticLoading = ({ progress }) => (
                 <div className="text-6xl md:text-8xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 animate-pulse">
                     SWEET BONANZA
                 </div>
+                <div className="text-2xl md:text-3xl font-bold text-white/60 mt-2">1000</div>
             </div>
             <div className="w-64 h-2 bg-white/10 rounded-full overflow-hidden mx-auto">
                 <div
@@ -29,102 +30,40 @@ const PragmaticLoading = ({ progress }) => (
     </div>
 )
 
-// Enhanced Win celebration component with coin sound
-const WinCelebration = ({ amount, onCoinSound }) => {
+// Win celebration component
+const WinCelebration = ({ amount }) => {
     const getWinLevel = (amt) => {
-        if (amt >= 1000) return { text: 'MEGA WIN!', color: 'from-yellow-400 via-orange-400 to-red-500', size: 'text-8xl md:text-9xl', coins: 20 }
-        if (amt >= 500) return { text: 'BIG WIN!', color: 'from-pink-400 via-purple-400 to-purple-600', size: 'text-7xl md:text-8xl', coins: 15 }
-        if (amt >= 100) return { text: 'GREAT WIN!', color: 'from-blue-400 via-cyan-400 to-teal-500', size: 'text-6xl md:text-7xl', coins: 12 }
-        return { text: 'WIN!', color: 'from-green-400 via-emerald-400 to-green-600', size: 'text-5xl md:text-6xl', coins: 8 }
+        if (amt >= 1000) return { text: 'MEGA WIN!', color: 'from-yellow-400 to-orange-500', size: 'text-7xl' }
+        if (amt >= 500) return { text: 'BIG WIN!', color: 'from-pink-400 to-purple-500', size: 'text-6xl' }
+        if (amt >= 100) return { text: 'GREAT WIN!', color: 'from-blue-400 to-cyan-500', size: 'text-5xl' }
+        return { text: 'WIN!', color: 'from-green-400 to-emerald-500', size: 'text-4xl' }
     }
 
     const level = getWinLevel(amount)
 
-    useEffect(() => {
-        // Play coin sound on mount
-        onCoinSound?.()
-    }, [])
-
     return (
         <div className="fixed inset-0 z-[150] flex items-center justify-center pointer-events-none">
-            {/* Darker overlay */}
-            <div className="absolute inset-0 bg-black/80 animate-fade-in" />
-
-            {/* Simplified sunburst rays - reduced to 8 */}
-            <div className="absolute inset-0 overflow-hidden">
-                {[...Array(8)].map((_, i) => (
-                    <div
-                        key={`ray-${i}`}
-                        className="absolute top-1/2 left-1/2 w-2 h-[200%] bg-gradient-to-t from-transparent via-yellow-400/15 to-transparent origin-bottom"
-                        style={{
-                            transform: `translate(-50%, -50%) rotate(${i * 45}deg)`,
-                            animation: 'spin-slow 20s linear infinite',
-                            animationDelay: `${i * 0.1}s`,
-                            willChange: 'transform'
-                        }}
-                    />
-                ))}
-            </div>
-
-            {/* Main content */}
-            <div className="relative text-center z-10">
-                {/* Glowing background circle */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-radial from-yellow-400/20 via-orange-400/10 to-transparent rounded-full blur-3xl animate-pulse" />
-
-                <div className="relative animate-bounce-premium">
-                    {/* Win text with enhanced styling */}
-                    <div className={`${level.size} font-black italic text-transparent bg-clip-text bg-gradient-to-r ${level.color} drop-shadow-[0_0_40px_rgba(255,215,0,0.8)] mb-6 animate-glow-text tracking-wider`}
-                        style={{ textShadow: '0 0 80px rgba(255,215,0,0.6), 0 0 120px rgba(255,215,0,0.4)' }}>
-                        {level.text}
-                    </div>
-
-                    {/* Amount with coin icon */}
-                    <div className="flex items-center justify-center gap-4 mb-4">
-                        <span className="text-6xl animate-bounce-coin">🪙</span>
-                        <div className="text-6xl md:text-7xl font-black text-white"
-                            style={{ filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.8))' }}>
-                            ₺ {amount.toLocaleString()}
-                        </div>
-                        <span className="text-6xl animate-bounce-coin" style={{ animationDelay: '0.2s' }}>🪙</span>
-                    </div>
+            <div className="absolute inset-0 bg-black/70 animate-fade-in" />
+            <div className="relative text-center animate-bounce-premium">
+                <div className={`${level.size} font-black italic text-transparent bg-clip-text bg-gradient-to-r ${level.color} drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] mb-4`}>
+                    {level.text}
                 </div>
-
-                {/* Optimized coin rain - reduced particles */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ width: '150vw', height: '150vh', left: '-25vw', top: '-25vh' }}>
-                    {[...Array(level.coins)].map((_, i) => (
+                <div className="text-5xl font-black text-white drop-shadow-lg">
+                    ₺ {amount.toLocaleString()}
+                </div>
+                {/* Coin rain effect */}
+                <div className="absolute inset-0 overflow-hidden">
+                    {[...Array(20)].map((_, i) => (
                         <div
                             key={i}
-                            className="absolute animate-fall-coin"
+                            className="absolute text-4xl animate-fall"
                             style={{
                                 left: `${Math.random() * 100}%`,
-                                top: `-${Math.random() * 10}%`,
-                                animationDelay: `${Math.random() * 1}s`,
-                                animationDuration: `${2.5 + Math.random() * 1.5}s`,
-                                fontSize: `${2 + Math.random() * 2}rem`,
-                                opacity: 0.8,
-                                willChange: 'transform'
+                                animationDelay: `${Math.random() * 2}s`,
+                                animationDuration: `${2 + Math.random() * 2}s`
                             }}
                         >
                             🪙
-                        </div>
-                    ))}
-                </div>
-
-                {/* Reduced sparkle effects - 12 instead of 30 */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    {[...Array(12)].map((_, i) => (
-                        <div
-                            key={`sparkle-${i}`}
-                            className="absolute text-yellow-300 animate-sparkle"
-                            style={{
-                                left: `${20 + Math.random() * 60}%`,
-                                top: `${20 + Math.random() * 60}%`,
-                                animationDelay: `${Math.random() * 2}s`,
-                                fontSize: `${0.5 + Math.random() * 1}rem`,
-                                willChange: 'transform, opacity'
-                            }}
-                        >
-                            ✨
                         </div>
                     ))}
                 </div>
@@ -165,21 +104,21 @@ export default function SweetBonanza1000() {
     const [pageLoading, setPageLoading] = useState(true)
     const [loadingProgress, setLoadingProgress] = useState(0)
 
-    // Symbols - Corrected to match actual file names
+    // Symbols
     const symbols = [
-        { id: 'oval', image: '/games/sweet-bonanza-1000/oval.png', multiplier: 2 },
-        { id: 'grapes', image: '/games/sweet-bonanza-1000/grapes.png', multiplier: 3 },
-        { id: 'watermelon', image: '/games/sweet-bonanza-1000/watermelon.png', multiplier: 4 },
-        { id: 'apple', image: '/games/sweet-bonanza-1000/apple.png', multiplier: 5 },
-        { id: 'plum', image: '/games/sweet-bonanza-1000/plum.png', multiplier: 6 },
-        { id: 'banana', image: '/games/sweet-bonanza-1000/banana.png', multiplier: 8 },
-        { id: 'heart', image: '/games/sweet-bonanza-1000/heart.png', multiplier: 10 },
-        { id: 'scatter', image: '/games/sweet-bonanza-1000/scatter.png', multiplier: 0 }
+        { id: 'candy', image: '/games/sweet-bonanza-1000/symbols/candy.png', multiplier: 2 },
+        { id: 'grape', image: '/games/sweet-bonanza-1000/symbols/grape.png', multiplier: 3 },
+        { id: 'watermelon', image: '/games/sweet-bonanza-1000/symbols/watermelon.png', multiplier: 4 },
+        { id: 'apple', image: '/games/sweet-bonanza-1000/symbols/apple.png', multiplier: 5 },
+        { id: 'plum', image: '/games/sweet-bonanza-1000/symbols/plum.png', multiplier: 6 },
+        { id: 'banana', image: '/games/sweet-bonanza-1000/symbols/banana.png', multiplier: 8 },
+        { id: 'heart', image: '/games/sweet-bonanza-1000/symbols/heart.png', multiplier: 10 },
+        { id: 'scatter', image: '/games/sweet-bonanza-1000/symbols/scatter.png', multiplier: 0 }
     ]
 
-    // Initialize grid (6 columns × 5 rows = 30 symbols)
+    // Initialize grid
     useEffect(() => {
-        const initialGrid = Array(30).fill(null).map(() => symbols[Math.floor(Math.random() * (symbols.length - 1))])
+        const initialGrid = Array(36).fill(null).map(() => symbols[Math.floor(Math.random() * (symbols.length - 1))])
         setGrid(initialGrid)
     }, [])
 
@@ -215,31 +154,6 @@ export default function SweetBonanza1000() {
 
     // Sound objects
     const sounds = useRef({})
-    const bgmRef = useRef(null)
-
-    // Initialize BGM
-    useEffect(() => {
-        try {
-            bgmRef.current = new Howl({
-                src: ['/games/sweet-bonanza-1000/sounds/bgm.mp3'],
-                loop: true,
-                volume: 0.3,
-                html5: true
-            })
-            // Auto-play BGM (user interaction may be required)
-            const playBGM = () => {
-                bgmRef.current?.play()
-                document.removeEventListener('click', playBGM)
-            }
-            document.addEventListener('click', playBGM)
-            return () => {
-                bgmRef.current?.stop()
-                document.removeEventListener('click', playBGM)
-            }
-        } catch (error) {
-            console.error('BGM error:', error)
-        }
-    }, [])
 
     const playSound = (soundName) => {
         try {
@@ -248,15 +162,13 @@ export default function SweetBonanza1000() {
                     spin: '/games/sweet-bonanza-1000/sounds/spin.mp3',
                     win: '/games/sweet-bonanza-1000/sounds/win.mp3',
                     bigwin: '/games/sweet-bonanza-1000/sounds/bigwin.mp3',
-                    coin: '/games/sweet-bonanza-1000/sounds/coin.mp3',
                     click: '/games/sweet-bonanza-1000/sounds/click.mp3',
                     scatter: '/games/sweet-bonanza-1000/sounds/scatter.mp3'
                 }
                 if (soundPaths[soundName]) {
                     sounds.current[soundName] = new Howl({
                         src: [soundPaths[soundName]],
-                        volume: 0.5,
-                        html5: true
+                        volume: 0.5
                     })
                 }
             }
@@ -278,11 +190,11 @@ export default function SweetBonanza1000() {
         // Deduct bet
         setBalance(prev => prev - betAmount)
 
-        // Simulate spin with dropping animation (6×5 grid = 30 symbols)
-        const newGrid = Array(30).fill(null).map(() => symbols[Math.floor(Math.random() * symbols.length)])
+        // Simulate spin with dropping animation
+        const newGrid = Array(36).fill(null).map(() => symbols[Math.floor(Math.random() * symbols.length)])
 
         // Animate symbols dropping
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 36; i++) {
             setTimeout(() => {
                 setDroppingIndices(prev => [...prev, i])
             }, i * 30)
@@ -325,7 +237,6 @@ export default function SweetBonanza1000() {
             setTimeout(() => {
                 setShowFireworks(true)
                 playSound(totalWin >= 500 ? 'bigwin' : 'win')
-                playSound('coin')
             }, 500)
 
             setTimeout(() => {
@@ -369,33 +280,32 @@ export default function SweetBonanza1000() {
     if (pageLoading) return <PragmaticLoading progress={loadingProgress} />
 
     return (
-        <div className="h-screen overflow-hidden bg-[#0f172a] text-white flex flex-col font-sans select-none relative">
+        <div className="min-h-screen bg-[#0f172a] text-white flex flex-col font-sans select-none relative">
             {/* Background */}
             <div className="fixed inset-0 bg-cover bg-center pointer-events-none opacity-60 scale-110"
                 style={{ backgroundImage: 'url("/games/sweet-bonanza-1000/background.png")' }} />
             <div className="fixed inset-0 bg-gradient-to-b from-blue-500/20 via-transparent to-pink-500/20 pointer-events-none" />
 
-            {/* Top Section - Header (fixed height) */}
-            <div className="flex-shrink-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
+            {/* Top Section - Header-like (sticky) */}
+            <div className="sticky top-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
                 <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4">
                     <div className="grid grid-cols-3 items-center gap-2 md:gap-4">
-                        {/* Left: Scatter Info */}
+                        {/* Left: Free Spins / Scatter Info */}
                         <div className="flex flex-col gap-1 md:gap-2">
+                            {isFreeSpins && (
+                                <div className="bg-gradient-to-b from-purple-500 to-purple-800 rounded-lg md:rounded-xl p-2 md:p-3 border border-white/30 md:border-2 shadow-lg w-fit">
+                                    <div className="text-[6px] sm:text-[7px] md:text-[8px] uppercase font-black text-white/60 tracking-widest text-center">Remaining Spins</div>
+                                    <div className="text-xl sm:text-2xl md:text-3xl font-black text-white italic text-center">{freeSpinsRemaining}</div>
+                                </div>
+                            )}
                             <div className="bg-black/60 backdrop-blur-md rounded-lg md:rounded-xl p-1.5 md:p-2 border border-pink-500/30 shadow-lg w-fit">
                                 <span className="text-xs sm:text-sm md:text-base font-black text-pink-400 italic">4 X SCATTER</span>
                                 <div className="text-[6px] sm:text-[7px] md:text-[8px] uppercase font-bold text-white/60">FREE SPINS</div>
                             </div>
                         </div>
 
-                        {/* Center: Remaining Spins */}
-                        <div className="flex justify-center">
-                            {isFreeSpins && (
-                                <div className="bg-gradient-to-b from-purple-500 to-purple-800 rounded-lg md:rounded-xl p-2 md:p-3 border border-white/30 md:border-2 shadow-lg">
-                                    <div className="text-[6px] sm:text-[7px] md:text-[8px] uppercase font-black text-white/60 tracking-widest text-center">Remaining Spins</div>
-                                    <div className="text-xl sm:text-2xl md:text-3xl font-black text-white italic text-center">{freeSpinsRemaining}</div>
-                                </div>
-                            )}
-                        </div>
+                        {/* Center: Empty */}
+                        <div />
 
                         {/* Right: Volatility */}
                         <div className="flex justify-end">
@@ -412,8 +322,8 @@ export default function SweetBonanza1000() {
                 </div>
             </div>
 
-            {/* Middle Section - Game Grid (with margins) */}
-            <div className="flex-1 flex items-center justify-center py-4 px-2 sm:px-4 my-4 relative z-30 overflow-hidden">
+            {/* Middle Section - Game Grid (naturally positioned) */}
+            <div className="flex-1 flex items-center justify-center py-4 md:py-6 lg:py-8 px-2 sm:px-4 relative z-10">
                 <div className="w-full max-w-7xl mx-auto">
                     <div className="flex flex-col lg:flex-row items-center justify-center gap-4 md:gap-6 lg:gap-10">
 
@@ -431,12 +341,12 @@ export default function SweetBonanza1000() {
                             </button>
                         </div>
 
-                        {/* Center: Game Grid - Responsive Size (final optimization) */}
-                        <div className="flex flex-col items-center w-full md:scale-[0.68] lg:scale-x-[0.76] lg:scale-y-[0.66]">
-                            <div className="relative bg-blue-400/20 backdrop-blur-xl rounded-2xl md:rounded-3xl p-4 sm:p-6 md:p-8 lg:p-10 border-2 md:border-4 lg:border-6 border-white/30 shadow-2xl ring-1 ring-blue-400/50 animate-neon-pulsate">
-                                <div className="grid grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-5 bg-black/70 rounded-xl md:rounded-2xl p-4 sm:p-6 md:p-8 lg:p-12 shadow-inner border border-white/10">
+                        {/* Center: Game Grid */}
+                        <div className="flex flex-col items-center">
+                            <div className="relative bg-blue-400/20 backdrop-blur-xl rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 lg:p-8 border-2 md:border-4 lg:border-6 border-white/30 shadow-2xl ring-1 ring-blue-400/50 animate-neon-pulsate">
+                                <div className="grid grid-cols-6 gap-1 sm:gap-1.5 md:gap-2 lg:gap-3 bg-black/70 rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 shadow-inner border border-white/10">
                                     {grid.map((symbol, idx) => (
-                                        <div key={idx} className={`relative w-14 h-14 xs:w-16 xs:h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 xl:w-32 xl:h-32 flex items-center justify-center transition-all duration-500 ${droppingIndices.includes(idx) ? 'animate-drop-in' : ''} ${winningSymbols.includes(idx) ? 'animate-match-pop z-20' : ''}`}>
+                                        <div key={idx} className={`relative w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 flex items-center justify-center transition-all duration-500 ${droppingIndices.includes(idx) ? 'animate-drop-in' : ''} ${winningSymbols.includes(idx) ? 'animate-match-pop z-20' : ''}`}>
                                             {symbol && (
                                                 <div className="w-full h-full flex items-center justify-center">
                                                     <img src={symbol.image} alt={symbol.id} className={`w-[95%] h-[95%] object-contain drop-shadow-lg ${winningSymbols.includes(idx) ? 'animate-glow-pulse scale-110' : ''}`} />
@@ -487,68 +397,71 @@ export default function SweetBonanza1000() {
                 </div>
             </div>
 
-            {/* Bottom Section - Footer (fixed height with margin) */}
-            <div className="flex-shrink-0 z-40 pointer-events-none mb-2">
-                <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 pointer-events-auto">
-                    {/* Spin Controls - Ultra Compact */}
-                    <div className="flex items-center justify-center gap-1 sm:gap-2 py-0.5 bg-black/90 backdrop-blur-md rounded-t-xl">
-                        <button onClick={() => adjustBet(-0.50)} className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 flex items-center justify-center bg-white/10 rounded-full border border-white/20 text-white hover:bg-white/30 transition-all active:scale-90">
-                            <span className="material-symbols-outlined text-base sm:text-lg md:text-xl font-black">remove</span>
+            {/* Bottom Section - Footer-like (sticky) */}
+            <div className="sticky bottom-0 z-50 bg-gradient-to-t from-black/90 to-transparent backdrop-blur-md border-t border-white/10">
+                <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+                    {/* Spin Controls */}
+                    <div className="flex items-center justify-center gap-4 sm:gap-6 md:gap-8 py-2 sm:py-3 md:py-4">
+                        <button onClick={() => adjustBet(-0.50)} className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/10 rounded-full border border-white/20 text-white hover:bg-white/30 transition-all active:scale-90">
+                            <span className="material-symbols-outlined text-xl sm:text-2xl md:text-3xl font-black">remove</span>
                         </button>
 
                         <button onClick={handleSpin} disabled={isSpinning || balance < betAmount}
-                            className={`relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all
-                                ${isSpinning ? 'opacity-50' : 'hover:scale-110 active:scale-90 shadow-[0_0_20px_rgba(255,255,255,0.2)]'}
-                                bg-gradient-to-b from-white via-slate-100 to-slate-400 border-2 border-black/40`}
-                            style={{ outline: '1px solid #10b981' }}>
-                            <span className={`material-symbols-outlined text-2xl sm:text-3xl md:text-3xl font-black text-slate-800 transition-all duration-500 ${isSpinning ? 'rotate-[360deg] animate-spin-slow' : 'rotate-0'}`}>
+                            className={`relative w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full flex items-center justify-center transition-all
+                                ${isSpinning ? 'opacity-50' : 'hover:scale-110 active:scale-90 shadow-[0_0_40px_rgba(255,255,255,0.2)]'}
+                                bg-gradient-to-b from-white via-slate-100 to-slate-400 border-2 sm:border-3 md:border-4 border-black/40`}
+                            style={{ outline: '2px solid #10b981' }}>
+                            <span className={`material-symbols-outlined text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-black text-slate-800 transition-all duration-500 ${isSpinning ? 'rotate-[360deg] animate-spin-slow' : 'rotate-0'}`}>
                                 sync
                             </span>
                         </button>
 
-                        <button onClick={() => adjustBet(0.50)} className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 flex items-center justify-center bg-white/10 rounded-full border border-white/20 text-white hover:bg-white/30 transition-all active:scale-90">
-                            <span className="material-symbols-outlined text-base sm:text-lg md:text-xl font-black">add</span>
+                        <button onClick={() => adjustBet(0.50)} className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/10 rounded-full border border-white/20 text-white hover:bg-white/30 transition-all active:scale-90">
+                            <span className="material-symbols-outlined text-xl sm:text-2xl md:text-3xl font-black">add</span>
                         </button>
                     </div>
 
-                    {/* Control Bar - Minimal */}
-                    <div className="flex items-center justify-between py-0.5 border-t border-white/5 bg-black/90 backdrop-blur-md">
-                        <div className="flex items-center gap-1">
-                            <button className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
-                                <span className="material-symbols-outlined text-white/50 text-sm sm:text-base md:text-lg">info</span>
+                    {/* Control Bar */}
+                    <div className="flex items-center justify-between py-2 sm:py-3 border-t border-white/5">
+                        {/* Left Icons */}
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <button className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
+                                <span className="material-symbols-outlined text-white/50 text-lg sm:text-xl md:text-2xl">info</span>
                             </button>
-                            <button onClick={() => setShowAutoplayModal(true)} className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
-                                <span className="material-symbols-outlined text-white/50 text-sm sm:text-base md:text-lg">autorenew</span>
+                            <button onClick={() => setShowAutoplayModal(true)} className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
+                                <span className="material-symbols-outlined text-white/50 text-lg sm:text-xl md:text-2xl">autorenew</span>
                             </button>
                         </div>
 
                         {/* Center Toggles */}
-                        <div className="flex items-center gap-1 sm:gap-2 bg-white/5 px-1.5 sm:px-2 py-0.5 rounded-full border border-white/10">
-                            <button onClick={() => setTurboSpin(!turboSpin)} className={`text-[7px] sm:text-[8px] font-black tracking-widest ${turboSpin ? 'text-yellow-400' : 'text-white/20'}`}>TURBO</button>
-                            <div className="w-px h-2 bg-white/20" />
-                            <button onClick={() => setQuickSpin(!quickSpin)} className={`text-[7px] sm:text-[8px] font-black tracking-widest ${quickSpin ? 'text-green-400' : 'text-white/20'}`}>QUICK</button>
+                        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 bg-white/5 px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 rounded-full border border-white/10">
+                            <button onClick={() => setTurboSpin(!turboSpin)} className={`text-[8px] sm:text-[9px] md:text-xs font-black tracking-widest ${turboSpin ? 'text-yellow-400' : 'text-white/20'}`}>TURBO</button>
+                            <div className="w-px h-2 sm:h-3 md:h-4 bg-white/20" />
+                            <button onClick={() => setQuickSpin(!quickSpin)} className={`text-[8px] sm:text-[9px] md:text-xs font-black tracking-widest ${quickSpin ? 'text-green-400' : 'text-white/20'}`}>QUICK</button>
                         </div>
 
                         {/* Right Icon */}
-                        <button className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
-                            <span className="material-symbols-outlined text-white/50 text-sm sm:text-base md:text-lg">menu</span>
+                        <button className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
+                            <span className="material-symbols-outlined text-white/50 text-lg sm:text-xl md:text-2xl">menu</span>
                         </button>
                     </div>
 
-                    {/* Stats Bar - Minimal */}
-                    <div className="flex items-center justify-center gap-1.5 sm:gap-2 py-0.5 border-t border-white/5 bg-black/90 backdrop-blur-md rounded-b-xl">
-                        <div className="flex items-center gap-0.5 sm:gap-1">
-                            <span className="text-yellow-400/80 font-black text-[6px] sm:text-[7px] uppercase tracking-widest">KREDİ</span>
-                            <span className="text-white font-black font-mono text-[10px] sm:text-xs">₺ {balance.toLocaleString()}</span>
+                    {/* Stats Bar */}
+                    <div className="flex items-center justify-center gap-4 sm:gap-6 md:gap-8 py-2 sm:py-3 border-t border-white/5">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                            <span className="text-yellow-400/80 font-black text-[8px] sm:text-[9px] md:text-[10px] uppercase tracking-widest">KREDİ</span>
+                            <span className="text-white font-black font-mono text-sm sm:text-base md:text-lg">₺ {balance.toLocaleString()}</span>
                         </div>
-                        <div className="w-px h-3 bg-white/10" />
-                        <div className="flex items-center gap-0.5 sm:gap-1">
-                            <span className="text-yellow-400/80 font-black text-[6px] sm:text-[7px] uppercase tracking-widest">BAHİS</span>
-                            <span className="text-white font-black font-mono text-xs sm:text-sm">₺ {betAmount.toLocaleString()}</span>
+                        <div className="w-px h-4 sm:h-5 bg-white/10" />
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                            <span className="text-yellow-400/80 font-black text-[8px] sm:text-[9px] md:text-[10px] uppercase tracking-widest">BAHİS</span>
+                            <span className="text-white font-black font-mono text-sm sm:text-base md:text-lg">₺ {betAmount.toLocaleString()}</span>
                         </div>
                     </div>
 
-
+                    <div className="text-[6px] sm:text-[7px] md:text-[8px] text-white/10 font-bold uppercase tracking-wider text-center pb-2">
+                        PRAGMATIC PLAY STYLE | ID: #75467157
+                    </div>
                 </div>
             </div>
 
@@ -565,7 +478,7 @@ export default function SweetBonanza1000() {
                 </div>
             )}
 
-            {showFireworks && <WinCelebration amount={winAmount} onCoinSound={() => playSound('coin')} />}
+            {showFireworks && <WinCelebration amount={winAmount} />}
 
             <style jsx>{`
                 @keyframes drop-in {
@@ -617,36 +530,6 @@ export default function SweetBonanza1000() {
                     to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
                 }
                 .animate-fall { animation: fall linear forwards; }
-                
-                @keyframes fall-coin {
-                    0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
-                    100% { transform: translateY(100vh) rotate(720deg) scale(0.5); opacity: 0; }
-                }
-                .animate-fall-coin { animation: fall-coin linear forwards; }
-                
-                @keyframes bounce-coin {
-                    0%, 100% { transform: translateY(0) scale(1); }
-                    50% { transform: translateY(-20px) scale(1.2); }
-                }
-                .animate-bounce-coin { animation: bounce-coin 1s ease-in-out infinite; }
-                
-                @keyframes scale-pulse {
-                    0%, 100% { transform: scale(1); }
-                    50% { transform: scale(1.1); }
-                }
-                .animate-scale-pulse { animation: scale-pulse 2s ease-in-out infinite; }
-                
-                @keyframes glow-text {
-                    0%, 100% { filter: brightness(1) drop-shadow(0 0 20px currentColor); }
-                    50% { filter: brightness(1.5) drop-shadow(0 0 40px currentColor); }
-                }
-                .animate-glow-text { animation: glow-text 1.5s ease-in-out infinite; }
-                
-                @keyframes sparkle {
-                    0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
-                    50% { opacity: 1; transform: scale(1) rotate(180deg); }
-                }
-                .animate-sparkle { animation: sparkle 2s ease-in-out infinite; }
             `}</style>
         </div>
     )

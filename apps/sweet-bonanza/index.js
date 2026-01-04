@@ -149,8 +149,10 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
   const reelRefs = useRef([])
   const bgMusicRef = useRef(null)
   const winSoundRef = useRef(null)
+  const bigWinSoundRef = useRef(null)
   const lossSoundRef = useRef(null)
   const spinSoundRef = useRef(null)
+  const clickSoundRef = useRef(null)
   const [musicEnabled, setMusicEnabled] = useState(true)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [showGameRules, setShowGameRules] = useState(false)
@@ -211,75 +213,59 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
       const playPromise = soundRef.current.play()
       if (playPromise !== undefined) {
         playPromise.catch(error => {
-          console.log('Audio play failed, using beep fallback:', error)
-          // Fallback to beep sound
-          createBeepSound(beepFreq, 0.3)
+          // console.log('Audio play failed:', error)
+          // Silent catch for autoplay restrictions
         })
       }
     } catch (error) {
       console.error('Error playing sound:', error)
-      // Fallback to beep sound
-      createBeepSound(beepFreq, 0.3)
     }
+  }
+
+  // Helper for button clicks
+  const playClickSound = () => {
+    playSound(clickSoundRef, 0.4)
   }
 
   // Initialize audio
   useEffect(() => {
     // Create audio elements for sounds
     try {
-      // Background music
-      bgMusicRef.current = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3')
+      // Background music - Sweet/Upbeat theme
+      bgMusicRef.current = new Audio('https://assets.mixkit.co/music/preview/mixkit-sweet-and-happy-1122.mp3')
       bgMusicRef.current.loop = true
-      bgMusicRef.current.volume = 0.3
+      bgMusicRef.current.volume = 0.2
       bgMusicRef.current.preload = 'auto'
 
-      // Try to load audio files from public folder, fallback to beep sounds
-      try {
-        // Win sound - try loading from public folder first
-        winSoundRef.current = new Audio('/sweet-bonanza-win.mp3')
-        winSoundRef.current.volume = 0.7
-        winSoundRef.current.preload = 'auto'
-        winSoundRef.current.onerror = () => {
-          console.log('Win sound file not found, will use beep sound')
-          winSoundRef.current = null
-        }
-        winSoundRef.current.load()
-      } catch (e) {
-        winSoundRef.current = null
-      }
+      // Win sound - Bright and sparkly
+      winSoundRef.current = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3')
+      winSoundRef.current.volume = 0.6
+      winSoundRef.current.preload = 'auto'
 
-      try {
-        // Loss sound
-        lossSoundRef.current = new Audio('/sweet-bonanza-loss.mp3')
-        lossSoundRef.current.volume = 0.7
-        lossSoundRef.current.preload = 'auto'
-        lossSoundRef.current.onerror = () => {
-          console.log('Loss sound file not found, will use beep sound')
-          lossSoundRef.current = null
-        }
-        lossSoundRef.current.load()
-      } catch (e) {
-        lossSoundRef.current = null
-      }
+      // Big Win sound - Celebratory crowd/victory
+      bigWinSoundRef.current = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-complete-or-victory-notification-205.mp3')
+      bigWinSoundRef.current.volume = 0.7
+      bigWinSoundRef.current.preload = 'auto'
 
-      try {
-        // Spin sound
-        spinSoundRef.current = new Audio('/sweet-bonanza-spin.mp3')
-        spinSoundRef.current.volume = 0.5
-        spinSoundRef.current.preload = 'auto'
-        spinSoundRef.current.onerror = () => {
-          console.log('Spin sound file not found, will use beep sound')
-          spinSoundRef.current = null
-        }
-        spinSoundRef.current.load()
-      } catch (e) {
-        spinSoundRef.current = null
-      }
+      // Loss sound - Short and subtle
+      lossSoundRef.current = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-negative-answer-2046.mp3')
+      lossSoundRef.current.volume = 0.5
+      lossSoundRef.current.preload = 'auto'
+
+      // Spin sound - Reel whoosh or start
+      spinSoundRef.current = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-retro-game-notification-212.mp3')
+      spinSoundRef.current.volume = 0.4
+      spinSoundRef.current.preload = 'auto'
+
+      // Click sound - Soft pop
+      clickSoundRef.current = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-selection-click-1109.mp3')
+      clickSoundRef.current.volume = 0.3
+      clickSoundRef.current.preload = 'auto'
 
       // Start background music if enabled
       if (musicEnabled && bgMusicRef.current) {
         bgMusicRef.current.play().catch((err) => {
-          console.log('Background music autoplay blocked:', err)
+          console.log('Background music autoplay blocked. Will play on first interaction.')
         })
       }
     } catch (error) {
@@ -288,22 +274,12 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
 
     return () => {
       // Cleanup audio on unmount
-      if (bgMusicRef.current) {
-        bgMusicRef.current.pause()
-        bgMusicRef.current = null
-      }
-      if (winSoundRef.current) {
-        winSoundRef.current.pause()
-        winSoundRef.current = null
-      }
-      if (lossSoundRef.current) {
-        lossSoundRef.current.pause()
-        lossSoundRef.current = null
-      }
-      if (spinSoundRef.current) {
-        spinSoundRef.current.pause()
-        spinSoundRef.current = null
-      }
+      [bgMusicRef, winSoundRef, bigWinSoundRef, lossSoundRef, spinSoundRef, clickSoundRef].forEach(ref => {
+        if (ref.current) {
+          ref.current.pause()
+          ref.current = null
+        }
+      })
     }
   }, [])
 
@@ -589,8 +565,9 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
     setShowWinAnimation(false)
     setWinningSymbols([])
 
-    // Play spin sound (medium frequency beep)
-    playSound(spinSoundRef, 0.5, !spinSoundRef.current, 600)
+    // Play spin sound
+    playSound(spinSoundRef, 0.4)
+    playClickSound()
 
     const initialBalance = balance
 
@@ -672,8 +649,12 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
         setShowWinAnimation(true)
         setShowFireworks(true)
 
-        // Play win sound (high frequency beep for win)
-        playSound(winSoundRef, 0.7, !winSoundRef.current, 1000)
+        // Play win sound (Big Win fallback)
+        if (win >= bet * 10) {
+          playSound(bigWinSoundRef, 0.7)
+        } else {
+          playSound(winSoundRef, 0.6)
+        }
 
         setGameHistory(prev => [{
           id: Date.now(),
@@ -692,8 +673,8 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
       } else {
         setError('Better luck next time!')
         setShowLossAnimation(true)
-        // Play loss sound (low frequency beep for loss)
-        playSound(lossSoundRef, 0.7, !lossSoundRef.current, 300)
+        // Play loss sound
+        playSound(lossSoundRef, 0.5)
 
         setTimeout(() => {
           setShowLossAnimation(false)
@@ -815,6 +796,7 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
 
   const handleAutoSpin = (count) => {
     if (spinning) return
+    playClickSound()
     setAutoSpinCount(count)
     setAutoSpin(true)
     spinReels()
@@ -1097,7 +1079,10 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
 
                   {/* Info and Sound Icons */}
                   <button
-                    onClick={() => setShowGameRules(true)}
+                    onClick={() => {
+                      playClickSound()
+                      setShowGameRules(true)
+                    }}
                     className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
                     title="Game Rules"
                   >
@@ -1105,11 +1090,22 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
                   </button>
                   <button
                     onClick={() => {
-                      const newSoundState = !soundEnabled
-                      setSoundEnabled(newSoundState)
-                      setMusicEnabled(newSoundState)
+                      if (!soundEnabled) {
+                        // If we are unmuting, play click sound AFTER enabling
+                        setSoundEnabled(true)
+                        setMusicEnabled(true)
+                        setTimeout(playClickSound, 50)
+                      } else {
+                        // If we are muting, play click sound BEFORE disabling
+                        playClickSound()
+                        setTimeout(() => {
+                          setSoundEnabled(false)
+                          setMusicEnabled(false)
+                        }, 50)
+                      }
+
                       if (bgMusicRef.current) {
-                        if (newSoundState) {
+                        if (!soundEnabled) {
                           bgMusicRef.current.play().catch(() => { })
                         } else {
                           bgMusicRef.current.pause()
@@ -1151,6 +1147,7 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
                     {/* Minus Button */}
                     <button
                       onClick={() => {
+                        playClickSound()
                         const currentBet = parseFloat(betAmount) || 0
                         const newBet = Math.max(1, currentBet - 1)
                         setBetAmount(newBet.toString())
@@ -1200,6 +1197,7 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
                     {/* Plus Button */}
                     <button
                       onClick={() => {
+                        playClickSound()
                         const currentBet = parseFloat(betAmount) || 0
                         const currentBalance = parseFloat(balance) || 0
                         const newBet = Math.min(currentBalance, currentBet + 1)
@@ -1218,7 +1216,15 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
 
                   {/* Auto Play Button - Below Spin Button */}
                   <button
-                    onClick={() => handleAutoSpin(10)}
+                    onClick={() => {
+                      if (autoSpin) {
+                        playClickSound()
+                        setAutoSpin(false)
+                        setAutoSpinCount(0)
+                      } else {
+                        handleAutoSpin(10)
+                      }
+                    }}
                     disabled={spinning || autoSpin || parseFloat(betAmount) <= 0 || parseFloat(betAmount) > balance}
                     className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-white font-bold text-xs transition-all ${autoSpin
                       ? 'bg-red-600 hover:bg-red-700'
@@ -1250,7 +1256,10 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
                 SWEET BONANZA - GAME RULES
               </h2>
               <button
-                onClick={() => setShowGameRules(false)}
+                onClick={() => {
+                  playClickSound()
+                  setShowGameRules(false)
+                }}
                 className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all flex-shrink-0"
                 aria-label="Close"
               >
@@ -1357,7 +1366,10 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
 
             <div className="mt-4 md:mt-6 flex justify-end">
               <button
-                onClick={() => setShowGameRules(false)}
+                onClick={() => {
+                  playClickSound()
+                  setShowGameRules(false)
+                }}
                 className="px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold rounded-lg transition-all text-sm md:text-base min-h-[44px]"
               >
                 Close
