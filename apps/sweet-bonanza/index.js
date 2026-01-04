@@ -2,13 +2,192 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { Howl } from 'howler'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { authAPI } from '@/lib/api'
 import sweetBonanzaAPI from '@/lib/api/sweetBonanza.api'
 import { log } from '@/utils/logger'
 import { updateUserData } from '@/utils/auth'
 
-// Fireworks Component for Win Celebration
+// Win Celebration Component - High Fidelity
+const WinCelebration = ({ amount, betAmount }) => {
+  const [showText, setShowText] = useState(false)
+  const canvasRef = useRef(null)
+
+  const getWinTier = () => {
+    const ratio = amount / betAmount
+    if (ratio >= 100) return { text: 'JACKPOT!', color: 'from-amber-300 via-yellow-500 to-amber-600', count: 120 }
+    if (ratio >= 50) return { text: 'SENSATIONAL!', color: 'from-orange-300 via-red-500 to-orange-600', count: 100 }
+    if (ratio >= 25) return { text: 'ULTRA WIN!', color: 'from-purple-300 via-pink-500 to-purple-600', count: 80 }
+    if (ratio >= 10) return { text: 'MEGA WIN!', color: 'from-blue-300 via-indigo-500 to-blue-600', count: 60 }
+    return { text: 'BIG WIN!', color: 'from-pink-200 via-pink-500 to-purple-600', count: 40 }
+  }
+
+  const tier = getWinTier()
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowText(true), 100)
+
+    // Canvas Coin Rain Logic
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    let animationFrameId
+
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+
+    const coins = []
+    const COIN_EMOJI = '🪙'
+
+    class Coin {
+      constructor() {
+        this.reset()
+        this.y = Math.random() * -canvas.height // Start scattered above
+      }
+      reset() {
+        this.x = Math.random() * canvas.width
+        this.y = -100
+        this.size = Math.random() * 40 + 30
+        this.speedY = Math.random() * 8 + 5
+        this.rotation = Math.random() * 360
+        this.rotationSpeed = Math.random() * 10 - 5
+        this.opacity = 1
+      }
+      update() {
+        this.y += this.speedY
+        this.rotation += this.rotationSpeed
+        if (this.y > canvas.height) {
+          this.reset()
+        }
+      }
+      draw() {
+        ctx.save()
+        ctx.translate(this.x, this.y)
+        ctx.rotate((this.rotation * Math.PI) / 180)
+        ctx.font = `${this.size}px serif`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        // Add shadow for glow
+        ctx.shadowBlur = 15
+        ctx.shadowColor = 'rgba(255, 215, 0, 0.8)'
+        ctx.fillText(COIN_EMOJI, 0, 0)
+        ctx.restore()
+      }
+    }
+
+    // Initialize coins
+    for (let i = 0; i < tier.count; i++) {
+      coins.push(new Coin())
+    }
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      coins.forEach(coin => {
+        coin.update()
+        coin.draw()
+      })
+      animationFrameId = requestAnimationFrame(render)
+    }
+
+    render()
+
+    const handleResize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      clearTimeout(timer)
+      cancelAnimationFrame(animationFrameId)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [tier.count])
+
+  return (
+    <div className="fixed inset-0 z-[100] pointer-events-none overflow-hidden flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-xl animate-fade-in" />
+
+      {/* Synchronized Fireworks */}
+      <Fireworks />
+
+      {/* Sunburst Rays */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-[300vw] h-[300vw] bg-[conic-gradient(from_0deg,transparent_0deg_10deg,rgba(255,215,0,0.3)_15deg_25deg,transparent_30deg_40deg,rgba(255,105,180,0.3)_45deg_55deg,transparent_60deg)] animate-spin-slow opacity-40" />
+      </div>
+
+      {/* Floating Sparkles - Keep limited for performance */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(15)].map((_, i) => (
+          <div key={i} className="absolute animate-sparkle" style={{
+            top: `${Math.random() * 100}%`,
+            left: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 2}s`,
+            fontSize: `${Math.random() * 20 + 10}px`
+          }}>✨</div>
+        ))}
+      </div>
+
+      {/* Canvas Coin Rain */}
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+
+      {/* Centered Tier Content */}
+      {showText && (
+        <div className="relative z-50 flex flex-col items-center animate-bounce-in">
+          <div className="relative mb-4">
+            <h2 className={`text-6xl md:text-9xl font-black italic tracking-tighter leading-none text-center
+                bg-gradient-to-b ${tier.color} bg-clip-text text-transparent
+                drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)] animate-pulse-glow w-full filter brightness-150
+            `}>
+              {tier.text}
+            </h2>
+            <div className="absolute -inset-4 bg-white/5 blur-3xl rounded-full -z-10 animate-pulse" />
+          </div>
+
+          <div className="bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 p-[3px] rounded-[3rem] shadow-[0_0_60px_rgba(255,165,0,0.6)] animate-scale-up">
+            <div className="bg-[#1a0f2e] px-8 md:px-16 py-4 md:py-8 rounded-[2.8rem] flex flex-col items-center">
+              <span className="text-white text-5xl md:text-8xl font-black italic drop-shadow-lg tracking-tighter flex items-center gap-4 md:gap-6">
+                <span className="text-yellow-400 animate-bounce">₺</span>
+                {amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes bounce-in {
+          0% { transform: scale(0.2); opacity: 0; }
+          50% { transform: scale(1.1); }
+          70% { transform: scale(0.95); }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes pulse-glow {
+          0%, 100% { filter: brightness(1.2) drop-shadow(0 0 30px rgba(255,215,0,0.6)); }
+          50% { filter: brightness(1.6) drop-shadow(0 0 60px rgba(255,105,180,0.9)); }
+        }
+        @keyframes sparkle {
+          0%, 100% { opacity: 0; transform: scale(0.5); }
+          50% { opacity: 0.8; transform: scale(1.4); }
+        }
+        @keyframes scale-up {
+          from { transform: scale(0.5) translateY(50px); opacity: 0; }
+          to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+        .animate-sparkle { animation: sparkle 2s ease-in-out infinite; }
+        .animate-scale-up { animation: scale-up 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+      `}</style>
+    </div>
+  )
+}
+
+// Fireworks Component - Simplified for performance
 const Fireworks = () => {
   const canvasRef = useRef(null)
 
@@ -18,97 +197,61 @@ const Fireworks = () => {
     const ctx = canvas.getContext('2d')
     let animationFrameId
 
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
+    const resize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    resize()
 
     const particles = []
-    const particleCount = 150
-    const colors = ['#FF1493', '#FFD700', '#FF69B4', '#00BFFF', '#ADFF2F', '#FF4500']
+    const colors = ['#FF1493', '#FFD700', '#FF69B4', '#00BFFF', '#ADFF2F']
 
     class Particle {
-      constructor(x, y, color) {
-        this.x = x
-        this.y = y
-        this.color = color
-        this.radius = Math.random() * 3 + 1
-        this.velocity = {
-          x: (Math.random() - 0.5) * 8,
-          y: (Math.random() - 0.5) * 8
-        }
+      constructor(x, y) {
+        this.x = x; this.y = y
+        const angle = Math.random() * Math.PI * 2
+        const speed = Math.random() * 5 + 2
+        this.vx = Math.cos(angle) * speed
+        this.vy = Math.sin(angle) * speed
+        this.color = colors[Math.floor(Math.random() * colors.length)]
         this.alpha = 1
-        this.decay = Math.random() * 0.015 + 0.015
+        this.decay = Math.random() * 0.02 + 0.01
+        this.size = Math.random() * 3 + 1
       }
-
-      draw() {
-        ctx.save()
-        ctx.globalAlpha = this.alpha
-        ctx.beginPath()
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
-        ctx.fillStyle = this.color
-        ctx.fill()
-        ctx.restore()
-      }
-
       update() {
-        this.velocity.y += 0.05 // gravity
-        this.x += this.velocity.x
-        this.y += this.velocity.y
-        this.alpha -= this.decay
+        this.x += this.vx; this.y += this.vy
+        this.vy += 0.12; this.alpha -= this.decay
       }
-    }
-
-    const createFirework = (x, y) => {
-      const color = colors[Math.floor(Math.random() * colors.length)]
-      for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle(x, y, color))
+      draw() {
+        ctx.globalAlpha = this.alpha
+        ctx.fillStyle = this.color
+        ctx.fillRect(this.x, this.y, this.size, this.size)
       }
     }
 
     const animate = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-      // Randomly create fireworks
       if (Math.random() < 0.05) {
-        createFirework(
-          Math.random() * canvas.width,
-          Math.random() * (canvas.height * 0.5)
-        )
+        const x = Math.random() * canvas.width
+        const y = Math.random() * canvas.height * 0.5
+        for (let i = 0; i < 30; i++) particles.push(new Particle(x, y))
       }
-
       for (let i = particles.length - 1; i >= 0; i--) {
         particles[i].update()
         particles[i].draw()
-        if (particles[i].alpha <= 0) {
-          particles.splice(i, 1)
-        }
+        if (particles[i].alpha <= 0) particles.splice(i, 1)
       }
-
       animationFrameId = requestAnimationFrame(animate)
     }
-
     animate()
-
-    const handleResize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-    }
-
-    window.addEventListener('resize', handleResize)
-
+    window.addEventListener('resize', resize)
     return () => {
       cancelAnimationFrame(animationFrameId)
-      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('resize', resize)
     }
   }, [])
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-[60]"
-      style={{ mixBlendMode: 'screen' }}
-    />
-  )
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[60]" />
 }
 
 export default function SweetBonanza({ isLauncher = false, gameInfo }) {
@@ -147,15 +290,39 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
   const [balanceHistory, setBalanceHistory] = useState([]) // Track balance changes with percentages
   const [reelSpeeds, setReelSpeeds] = useState([0, 0, 0, 0, 0, 0]) // Individual reel speeds for realistic spinning
   const reelRefs = useRef([])
-  const bgMusicRef = useRef(null)
-  const winSoundRef = useRef(null)
-  const bigWinSoundRef = useRef(null)
-  const lossSoundRef = useRef(null)
-  const spinSoundRef = useRef(null)
-  const clickSoundRef = useRef(null)
   const [musicEnabled, setMusicEnabled] = useState(true)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [showGameRules, setShowGameRules] = useState(false)
+  const [gameScale, setGameScale] = useState(1)
+
+  // Responsive Scaling Logic
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth
+      const height = window.innerHeight
+
+      // Target dimensions for scaling
+      const targetWidth = 1200
+      const targetHeight = 900
+
+      const scaleW = width / targetWidth
+      const scaleH = height / targetHeight
+
+      // Calculate final scale ensuring game fits both directions
+      let finalScale = Math.min(scaleW, scaleH)
+
+      // Mobile tweaks
+      if (width < 768) {
+        finalScale = Math.min(width / 400, height / 800)
+      }
+
+      setGameScale(Math.min(1.2, finalScale))
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const symbols = ['🍇', '🍊', '🍋', '🍉', '🍌', '🍎', '🍓', '⭐', '💎']
   // Weighted symbols for more realistic gameplay (lower value = more common)
@@ -165,131 +332,85 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
   }
   const quickBetAmounts = ['10', '50', '100', '500', '1000']
 
-  // Helper function to create beep sound using Web Audio API
-  const createBeepSound = (frequency, duration, type = 'sine') => {
-    if (!soundEnabled || typeof window === 'undefined' || !window.AudioContext && !window.webkitAudioContext) {
-      return
-    }
-
-    try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext
-      const audioContext = new AudioContext()
-      const oscillator = audioContext.createOscillator()
-      const gainNode = audioContext.createGain()
-
-      oscillator.connect(gainNode)
-      gainNode.connect(audioContext.destination)
-
-      oscillator.frequency.value = frequency
-      oscillator.type = type
-
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration)
-
-      oscillator.start(audioContext.currentTime)
-      oscillator.stop(audioContext.currentTime + duration)
-    } catch (error) {
-      console.error('Error creating beep sound:', error)
-    }
-  }
-
-  // Helper function to play sound
-  const playSound = (soundRef, volume = 0.7, useBeep = false, beepFreq = 800) => {
+  // Helper function to play sound with Howler
+  const playSound = (soundKey, volume = 0.7) => {
     if (!soundEnabled) return
-
-    if (useBeep) {
-      // Use Web Audio API beep as fallback
-      createBeepSound(beepFreq, 0.3)
-      return
-    }
-
-    if (!soundRef?.current) return
-
-    try {
-      // Reset and play audio
-      soundRef.current.currentTime = 0
-      soundRef.current.volume = volume
-
-      const playPromise = soundRef.current.play()
-      if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          // console.log('Audio play failed:', error)
-          // Silent catch for autoplay restrictions
-        })
-      }
-    } catch (error) {
-      console.error('Error playing sound:', error)
+    const sound = sounds.current[soundKey]
+    if (sound) {
+      sound.volume(volume)
+      sound.play()
     }
   }
 
   // Helper for button clicks
   const playClickSound = () => {
-    playSound(clickSoundRef, 0.4)
+    playSound('click', 0.4)
   }
 
-  // Initialize audio
+  // Initialize sounds using Howler
+  const sounds = useRef({})
   useEffect(() => {
-    // Create audio elements for sounds
     try {
-      // Background music - Sweet/Upbeat theme
-      bgMusicRef.current = new Audio('https://assets.mixkit.co/music/preview/mixkit-sweet-and-happy-1122.mp3')
-      bgMusicRef.current.loop = true
-      bgMusicRef.current.volume = 0.2
-      bgMusicRef.current.preload = 'auto'
-
-      // Win sound - Bright and sparkly
-      winSoundRef.current = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3')
-      winSoundRef.current.volume = 0.6
-      winSoundRef.current.preload = 'auto'
-
-      // Big Win sound - Celebratory crowd/victory
-      bigWinSoundRef.current = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-complete-or-victory-notification-205.mp3')
-      bigWinSoundRef.current.volume = 0.7
-      bigWinSoundRef.current.preload = 'auto'
-
-      // Loss sound - Short and subtle
-      lossSoundRef.current = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-negative-answer-2046.mp3')
-      lossSoundRef.current.volume = 0.5
-      lossSoundRef.current.preload = 'auto'
-
-      // Spin sound - Reel whoosh or start
-      spinSoundRef.current = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-retro-game-notification-212.mp3')
-      spinSoundRef.current.volume = 0.4
-      spinSoundRef.current.preload = 'auto'
-
-      // Click sound - Soft pop
-      clickSoundRef.current = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-selection-click-1109.mp3')
-      clickSoundRef.current.volume = 0.3
-      clickSoundRef.current.preload = 'auto'
-
-      // Start background music if enabled
-      if (musicEnabled && bgMusicRef.current) {
-        bgMusicRef.current.play().catch((err) => {
-          console.log('Background music autoplay blocked. Will play on first interaction.')
+      sounds.current = {
+        bgm: new Howl({
+          src: ['https://assets.mixkit.co/music/preview/mixkit-sweet-and-happy-1122.mp3'],
+          loop: true,
+          volume: 0.15,
+          html5: true
+        }),
+        win: new Howl({
+          src: ['https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3'],
+          volume: 0.6
+        }),
+        bigWin: new Howl({
+          src: ['https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-complete-or-victory-notification-205.mp3'],
+          volume: 0.8
+        }),
+        loss: new Howl({
+          src: ['https://assets.mixkit.co/sfx/preview/mixkit-negative-answer-2046.mp3'],
+          volume: 0.4
+        }),
+        spin: new Howl({
+          src: ['https://assets.mixkit.co/sfx/preview/mixkit-retro-game-notification-212.mp3'],
+          volume: 0.3
+        }),
+        click: new Howl({
+          src: ['https://assets.mixkit.co/sfx/preview/mixkit-selection-click-1109.mp3'],
+          volume: 0.2
         })
+      }
+
+      // Unlock audio on first interaction
+      const unlockAudio = () => {
+        if (musicEnabled && sounds.current.bgm) {
+          sounds.current.bgm.play()
+        }
+        window.removeEventListener('click', unlockAudio)
+        window.removeEventListener('touchstart', unlockAudio)
+      }
+
+      window.addEventListener('click', unlockAudio)
+      window.addEventListener('touchstart', unlockAudio)
+
+      return () => {
+        Object.values(sounds.current).forEach(sound => sound.unload())
+        window.removeEventListener('click', unlockAudio)
+        window.removeEventListener('touchstart', unlockAudio)
       }
     } catch (error) {
       console.error('Error initializing audio:', error)
-    }
-
-    return () => {
-      // Cleanup audio on unmount
-      [bgMusicRef, winSoundRef, bigWinSoundRef, lossSoundRef, spinSoundRef, clickSoundRef].forEach(ref => {
-        if (ref.current) {
-          ref.current.pause()
-          ref.current = null
-        }
-      })
     }
   }, [])
 
   // Handle music toggle
   useEffect(() => {
-    if (bgMusicRef.current) {
+    if (sounds.current.bgm) {
       if (musicEnabled) {
-        bgMusicRef.current.play().catch(() => { })
+        if (!sounds.current.bgm.playing()) {
+          sounds.current.bgm.play()
+        }
       } else {
-        bgMusicRef.current.pause()
+        sounds.current.bgm.pause()
       }
     }
   }, [musicEnabled])
@@ -566,66 +687,71 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
     setWinningSymbols([])
 
     // Play spin sound
-    playSound(spinSoundRef, 0.4)
+    playSound('spin', 0.4)
     playClickSound()
 
     const initialBalance = balance
 
-    // Show spinning animation first
+    // Optimized Spinning Animation Logic
     const baseSpinDuration = 2000
     const reelStopDelays = [0, 200, 400, 600, 800, 1000]
-    const spinInterval = 50
+    const startTime = Date.now()
 
     setReelSpeeds([100, 100, 100, 100, 100, 100])
 
-    const reelAnimations = reelStopDelays.map((delay, reelIndex) => {
-      return new Promise((resolve) => {
-        let currentSpin = 0
-        const spins = Math.floor((baseSpinDuration + delay) / spinInterval)
+    const intervalId = setInterval(() => {
+      const now = Date.now()
+      const elapsed = now - startTime
 
-        const interval = setInterval(() => {
-          setReels(prevReels => {
-            const newReels = [...prevReels]
-            newReels[reelIndex] = Array(5).fill(null).map(() => getWeightedSymbol())
-            return newReels
-          })
+      setReels(prevReels => {
+        let changed = false
+        const newReels = [...prevReels]
 
-          setReelSpeeds(prevSpeeds => {
-            const newSpeeds = [...prevSpeeds]
-            const progress = currentSpin / spins
-            newSpeeds[reelIndex] = 100 * (1 - progress * 0.8)
-            return newSpeeds
-          })
-
-          currentSpin++
-
-          if (currentSpin >= spins) {
-            clearInterval(interval)
-            setReelSpeeds(prevSpeeds => {
-              const newSpeeds = [...prevSpeeds]
-              newSpeeds[reelIndex] = 0
-              return newSpeeds
-            })
-            resolve()
+        for (let i = 0; i < 6; i++) {
+          const reelTargetDuration = baseSpinDuration + reelStopDelays[i]
+          if (elapsed < reelTargetDuration) {
+            newReels[i] = Array(5).fill(null).map(() => getWeightedSymbol())
+            changed = true
           }
-        }, spinInterval)
+        }
+
+        return changed ? newReels : prevReels
       })
-    })
+
+      // Update reel speeds
+      setReelSpeeds(prevSpeeds => {
+        const newSpeeds = [...prevSpeeds]
+        let changed = false
+        for (let i = 0; i < 6; i++) {
+          const reelTargetDuration = baseSpinDuration + reelStopDelays[i]
+          if (elapsed >= reelTargetDuration && newSpeeds[i] !== 0) {
+            newSpeeds[i] = 0
+            changed = true
+          }
+        }
+        return changed ? newSpeeds : prevSpeeds
+      })
+
+      // Check if all reels stopped
+      if (elapsed > baseSpinDuration + 1000) {
+        clearInterval(intervalId)
+      }
+    }, 60) // Slightly slower interval for performance, still looks smooth
 
     try {
       // Call backend API to play game
       const response = await sweetBonanzaAPI.playGame(bet)
       const gameData = response.data?.data || response.data
 
-      // Wait for animation to complete
-      await Promise.all(reelAnimations)
+      // Ensure we wait at least for the maximum Reel stop delay
+      await new Promise(resolve => setTimeout(resolve, baseSpinDuration + 1000))
 
       // Set final reels from backend
       const finalReels = gameData.reels || []
-      // Ensure reels are properly formatted as 6 columns with 5 rows each
       const formattedReels = finalReels.length === 6 && finalReels.every(reel => Array.isArray(reel) && reel.length === 5)
         ? finalReels
         : Array(6).fill(null).map(() => Array(5).fill(null).map(() => getWeightedSymbol()))
+
       setReels(formattedReels)
       setReelSpeeds([0, 0, 0, 0, 0, 0])
 
@@ -649,11 +775,11 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
         setShowWinAnimation(true)
         setShowFireworks(true)
 
-        // Play win sound (Big Win fallback)
+        // Play win sound
         if (win >= bet * 10) {
-          playSound(bigWinSoundRef, 0.7)
+          playSound('bigWin', 0.8)
         } else {
-          playSound(winSoundRef, 0.6)
+          playSound('win', 0.6)
         }
 
         setGameHistory(prev => [{
@@ -674,7 +800,7 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
         setError('Better luck next time!')
         setShowLossAnimation(true)
         // Play loss sound
-        playSound(lossSoundRef, 0.5)
+        playSound('loss', 0.5)
 
         setTimeout(() => {
           setShowLossAnimation(false)
@@ -820,11 +946,10 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
   }
 
   return (
-    <div className="relative flex w-full flex-col" style={{
+    <div className="fixed inset-0 flex w-full flex-col overflow-hidden" style={{
       background: 'linear-gradient(to bottom, #87CEEB 0%, #E0B0FF 50%, #FFB6C1 100%)',
-      minHeight: isLauncher ? 'auto' : '100vh',
-      width: '100%',
-      overflow: 'auto'
+      height: '100dvh',
+      width: '100vw'
     }}>
       {/* Candy-Themed Background - Exact Match from Screenshot */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -895,24 +1020,10 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
       </div>
 
 
-      <main className="relative flex flex-col items-center justify-center z-10 w-full" style={{ paddingTop: '5px', paddingBottom: '5px', overflow: 'visible', minHeight: '100vh' }}>
+      <main className="relative flex-1 flex flex-col items-center justify-center z-10 w-full overflow-hidden">
         {/* Win Celebration Animation */}
         {showWinAnimation && winAmount > 0 && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-pink-500/20 to-purple-600/20 animate-pulse"></div>
-            {showFireworks && <Fireworks />}
-            <div className="relative text-center z-10">
-              <div className="text-9xl md:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 animate-bounce">
-                🎉
-              </div>
-              <div className="mt-4 text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 animate-pulse">
-                BIG WIN!
-              </div>
-              <div className="mt-2 text-3xl md:text-5xl font-black text-yellow-400 animate-pulse">
-                ₺{winAmount.toFixed(2)}
-              </div>
-            </div>
-          </div>
+          <WinCelebration amount={winAmount} betAmount={parseFloat(betAmount)} />
         )}
 
         {/* Loss Animation */}
@@ -968,71 +1079,55 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
         )}
 
 
-        {/* Game Area - Exact Layout Match from Screenshot */}
-        <div className="w-full max-w-[95%] md:max-w-[70%] lg:max-w-[55%] xl:max-w-[60%] relative z-20 px-2 md:px-4 flex-1 flex flex-col min-h-0 game-area-laptop" style={{ transform: 'scale(1)', transformOrigin: 'center top' }}>
-          <div className="relative flex flex-col items-center flex-1 justify-between min-h-0 w-full">
+        <div className="w-full relative z-20 flex-1 flex flex-col items-center justify-center min-h-0" style={{ transform: `scale(${gameScale})`, transformOrigin: 'center center' }}>
+          <div className="relative flex flex-col items-center flex-1 justify-center min-h-0 w-full max-w-[1400px]">
             {/* Reels Area - Full Width */}
-            <div className="w-full flex-1 flex flex-col min-h-0" style={{ minHeight: '0' }}>
+            <div className="w-full flex flex-col items-center min-h-0">
               {/* Multiplier Banner - Exact Match */}
-              <div className="mb-2 md:mb-3 rounded-lg md:rounded-xl p-2 md:p-3 text-center shadow-xl md:shadow-2xl" style={{
+              <div className="mb-2 w-full max-w-[800px] rounded-xl p-2 md:p-3 text-center shadow-2xl" style={{
                 background: 'linear-gradient(135deg, #FF69B4 0%, #FFD700 30%, #FF69B4 60%, #FFD700 100%)',
                 border: '2px solid #FFFFFF',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.4), inset 0 2px 6px rgba(255,255,255,0.4), inset 0 -1px 3px rgba(0,0,0,0.2)'
+                boxShadow: '0 4px 15px rgba(0,0,0,0.4), inset 0 2px 6px rgba(255,255,255,0.4)'
               }}>
-                <p className="text-white font-black text-xs md:text-sm lg:text-base xl:text-lg" style={{
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.7), 0 0 10px rgba(255,255,255,0.4)',
-                  letterSpacing: '0.5px',
-                  fontWeight: 900
+                <p className="text-white font-black text-sm md:text-xl uppercase" style={{
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+                  letterSpacing: '0.5px'
                 }}>
                   RANDOM MULTIPLIER UP TO 100X IN FREE SPINS
                 </p>
               </div>
 
-              {/* Reels Container - 6 columns x 5 rows Grid - Light Purple/Cloudy Background - Exact Match */}
-              <div className="relative rounded-xl md:rounded-2xl p-1 md:p-2 lg:p-3 shadow-xl md:shadow-2xl mx-auto w-2/3" style={{
+              {/* Reels Container */}
+              <div className="relative rounded-2xl p-2 md:p-4 shadow-2xl w-full max-w-[850px]" style={{
                 background: 'linear-gradient(135deg, #E8D5F7 0%, #F5EBFF 30%, #E8D5F7 60%, #F0E0FF 100%)',
-                border: '3px solid #FFFFFF',
-                boxShadow: '0 6px 20px rgba(0,0,0,0.25), inset 0 2px 8px rgba(255,255,255,0.6)',
-                position: 'relative',
-                overflow: 'visible'
+                border: '4px solid #FFFFFF',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.3), inset 0 2px 10px rgba(255,255,255,0.6)',
               }}>
-                {/* Cloudy effect overlay */}
-                <div className="absolute inset-0 opacity-30 pointer-events-none rounded-xl md:rounded-2xl" style={{
-                  background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, transparent 50%), radial-gradient(circle at 70% 70%, rgba(255,255,255,0.3) 0%, transparent 50%)'
-                }}></div>
-                <div className="grid grid-cols-6 gap-1 md:gap-2 relative z-10 w-full" style={{
+                <div className="grid grid-cols-6 gap-2 relative z-10 w-full" style={{
                   aspectRatio: '6/5'
                 }}>
                   {reels.map((reel, reelIndex) =>
                     reel.map((symbol, symbolIndex) => {
                       const isWinning = isWinningPosition(reelIndex, symbolIndex)
-                      const reelSpeed = reelSpeeds[reelIndex] || 0
+                      const isReelSpinning = spinning && reelSpeeds[reelIndex] > 0
                       return (
                         <div
                           key={`${reelIndex}-${symbolIndex}`}
-                          className={`aspect-square flex items-center justify-center rounded-lg md:rounded-xl border-2 md:border-3 transition-all duration-300 relative overflow-hidden ${spinning && reelSpeed > 0
-                            ? 'bg-gradient-to-b from-purple-300 to-purple-400 border-purple-500'
+                          className={`aspect-square flex items-center justify-center rounded-xl border-2 transition-all duration-300 relative overflow-hidden ${isReelSpinning
+                            ? 'bg-purple-300'
                             : isWinning
-                              ? 'bg-gradient-to-b from-yellow-300 to-yellow-400 border-yellow-600 shadow-xl md:shadow-2xl shadow-yellow-500/70'
-                              : 'bg-white border-gray-300'
+                              ? 'bg-yellow-400 border-yellow-600 scale-110 z-20'
+                              : 'bg-white border-gray-200'
                             }`}
                           style={{
-                            boxShadow: isWinning
-                              ? '0 0 20px rgba(255, 215, 0, 1), inset 0 2px 8px rgba(255,255,255,0.8)'
-                              : spinning && reelSpeed > 0
-                                ? '0 2px 6px rgba(147, 51, 234, 0.3)'
-                                : '0 2px 6px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.9)',
-                            borderWidth: '2px',
-                            borderColor: isWinning ? '#F59E0B' : spinning ? '#9333EA' : '#D1D5DB',
-                            animation: isWinning ? 'winningGlow 0.6s ease-in-out infinite' : undefined,
-                            background: !spinning && !isWinning ? 'linear-gradient(to bottom, #FFFFFF 0%, #F9FAFB 100%)' : undefined,
-                            fontSize: 'clamp(1rem, 4vw, 2.5rem)',
-                            filter: spinning && reelSpeed > 0 ? 'blur(2px)' : 'none'
+                            boxShadow: isWinning ? '0 0 25px rgba(255, 215, 0, 1)' : '0 4px 8px rgba(0,0,0,0.1)',
+                            willChange: 'transform',
+                            transform: isWinning ? 'scale(1.1) translateZ(0)' : 'translateZ(0)'
                           }}
                         >
-                          <span className={`transition-all duration-300 relative z-10 ${isWinning ? 'scale-125' : ''}`} style={{
-                            filter: isWinning ? 'drop-shadow(0 0 8px rgba(255,215,0,0.8))' : 'drop-shadow(0 1px 3px rgba(0,0,0,0.1))',
-                            display: 'block'
+                          <span className={`${isReelSpinning ? 'animate-reel-spin' : ''} ${isWinning ? 'animate-pop' : ''}`} style={{
+                            fontSize: 'clamp(1.5rem, 5vw, 3.5rem)',
+                            filter: isReelSpinning ? 'blur(2px)' : 'none'
                           }}>
                             {symbol}
                           </span>
@@ -1043,18 +1138,21 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
                 </div>
               </div>
 
-              {/* WIN OVER 21,100X BET - Exact Match from Screenshot */}
-              <div className="mt-2 text-center">
-                <p className="text-white font-black text-lg md:text-xl lg:text-2xl" style={{
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.6), 0 0 10px rgba(255,255,255,0.3)',
-                  letterSpacing: '1px'
+              {/* WIN OVER 21,100X BET */}
+              <div className="mt-4 text-center">
+                <p className="text-white font-black text-xl md:text-4xl italic" style={{
+                  textShadow: '3px 3px 6px rgba(0,0,0,0.5)',
+                  letterSpacing: '2px'
                 }}>
                   WIN OVER 21,100X BET
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
 
-              {/* Volatility Indicator - Exact Match */}
-              {/* <div className="mt-4 rounded-lg p-3 md:p-4 flex items-center gap-3" style={{
+        {/* Volatility Indicator - Exact Match */}
+        {/* <div className="mt-4 rounded-lg p-3 md:p-4 flex items-center gap-3" style={{
                   background: 'rgba(0, 0, 0, 0.6)',
                   backdropFilter: 'blur(10px)'
                 }}>
@@ -1066,419 +1164,224 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
                   </div>
                 </div> */}
 
-              {/* Bottom Controls Bar - Exact Match from Screenshot */}
-              <div className="mt-2 md:mt-1 flex flex-col md:flex-row items-center justify-between w-full gap-2 md:gap-2 px-2 md:px-2 py-2 md:py-1.5" style={{
-                background: 'rgba(0, 0, 0, 0.4)',
-                backdropFilter: 'blur(5px)',
-                borderRadius: '6px'
-              }}>
-                {/* Left Side - Credit, Bet, Icons - Exact Match */}
-                <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-center md:justify-start">
-                  {/* Pragmatic Play Logo */}
-                  <div className="text-white text-xs font-bold opacity-80 hidden md:block">PRAGMATIC PLAY</div>
+        {/* Bottom Controls Bar - Exact Match from Screenshot */}
+        <div className="mt-2 md:mt-1 flex flex-col md:flex-row items-center justify-between w-full gap-2 md:gap-2 px-2 md:px-2 py-2 md:py-1.5" style={{
+          background: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(5px)',
+          borderRadius: '6px'
+        }}>
+          {/* Left Side - Credit, Bet, Icons - Exact Match */}
+          <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-center md:justify-start">
+            {/* Pragmatic Play Logo */}
+            <div className="text-white text-xs font-bold opacity-80 hidden md:block">PRAGMATIC PLAY</div>
 
-                  {/* Info and Sound Icons */}
-                  <button
-                    onClick={() => {
-                      playClickSound()
-                      setShowGameRules(true)
-                    }}
-                    className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
-                    title="Game Rules"
-                  >
-                    <span className="material-symbols-outlined text-white text-base md:text-lg">info</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (!soundEnabled) {
-                        // If we are unmuting, play click sound AFTER enabling
-                        setSoundEnabled(true)
-                        setMusicEnabled(true)
-                        setTimeout(playClickSound, 50)
-                      } else {
-                        // If we are muting, play click sound BEFORE disabling
-                        playClickSound()
-                        setTimeout(() => {
-                          setSoundEnabled(false)
-                          setMusicEnabled(false)
-                        }, 50)
-                      }
+            {/* Info and Sound Icons */}
+            <button
+              onClick={() => {
+                playClickSound()
+                setShowGameRules(true)
+              }}
+              className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
+              title="Game Rules"
+            >
+              <span className="material-symbols-outlined text-white text-base md:text-lg">info</span>
+            </button>
+            <button
+              onClick={() => {
+                if (!soundEnabled) {
+                  // If we are unmuting, play click sound AFTER enabling
+                  setSoundEnabled(true)
+                  setMusicEnabled(true)
+                  setTimeout(playClickSound, 50)
+                } else {
+                  // If we are muting, play click sound BEFORE disabling
+                  playClickSound()
+                  setTimeout(() => {
+                    setSoundEnabled(false)
+                    setMusicEnabled(false)
+                  }, 50)
+                }
 
-                      if (bgMusicRef.current) {
-                        if (!soundEnabled) {
-                          bgMusicRef.current.play().catch(() => { })
-                        } else {
-                          bgMusicRef.current.pause()
-                        }
-                      }
-                    }}
-                    className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
-                    title={soundEnabled && musicEnabled ? 'Mute' : 'Unmute'}
-                  >
-                    <span className="material-symbols-outlined text-white text-base md:text-lg">
-                      {soundEnabled && musicEnabled ? 'volume_up' : 'volume_off'}
-                    </span>
-                  </button>
+                if (bgMusicRef.current) {
+                  if (!soundEnabled) {
+                    bgMusicRef.current.play().catch(() => { })
+                  } else {
+                    bgMusicRef.current.pause()
+                  }
+                }
+              }}
+              className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
+              title={soundEnabled && musicEnabled ? 'Mute' : 'Unmute'}
+            >
+              <span className="material-symbols-outlined text-white text-base md:text-lg">
+                {soundEnabled && musicEnabled ? 'volume_up' : 'volume_off'}
+              </span>
+            </button>
 
-                  {/* Credit/Balance */}
-                  <div className="text-white font-bold">
-                    <div className="text-xs opacity-80">KREDİ</div>
-                    <div className="text-xs md:text-sm">₺{typeof balance === 'number' && !isNaN(balance) ? balance.toFixed(2) : '0.00'}</div>
-                  </div>
+            {/* Credit/Balance */}
+            <div className="text-white font-bold">
+              <div className="text-xs opacity-80">KREDİ</div>
+              <div className="text-xs md:text-sm">₺{typeof balance === 'number' && !isNaN(balance) ? balance.toFixed(2) : '0.00'}</div>
+            </div>
 
-                  {/* Bet Amount */}
-                  <div className="text-white font-bold">
-                    <div className="text-xs opacity-80">BAHİS</div>
-                    <div className="text-xs md:text-sm">₺{parseFloat(betAmount) || 0}.00</div>
-                  </div>
-                </div>
-
-                {/* Center - Turbo Spin Instruction - Exact Match */}
-                <div className="flex-1 text-center hidden md:block">
-                  <p className="text-white text-xs font-medium opacity-90">
-                    TURBO SPİN İÇİN BOŞLUK TUŞUNA BASILI TUTUN
-                  </p>
-                </div>
-
-                {/* Right Side - Spin Button with +/- and Auto Play - Exact Match */}
-                <div className="flex flex-col items-center gap-2">
-                  {/* Spin Button with +/- buttons */}
-                  <div className="flex items-center gap-1 md:gap-2">
-                    {/* Minus Button */}
-                    <button
-                      onClick={() => {
-                        playClickSound()
-                        const currentBet = parseFloat(betAmount) || 0
-                        const newBet = Math.max(1, currentBet - 1)
-                        setBetAmount(newBet.toString())
-                      }}
-                      disabled={spinning || parseFloat(betAmount) <= 1}
-                      className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 hover:bg-white/30 text-white font-bold text-base md:text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center hover:scale-110 active:scale-95"
-                      title="Decrease Bet"
-                      style={{
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                      }}
-                    >
-                      -
-                    </button>
-
-                    {/* Large Circular Spin Button - Exact Match */}
-                    <button
-                      onClick={spinReels}
-                      disabled={spinning || parseFloat(betAmount) <= 0 || parseFloat(betAmount) > balance}
-                      className={`relative w-16 h-16 md:w-20 md:h-20 rounded-full font-black transition-all transform overflow-hidden group ${spinning
-                        ? 'bg-gray-500 cursor-not-allowed'
-                        : 'bg-black hover:scale-110 active:scale-95 text-white'
-                        }`}
-                      style={{
-                        boxShadow: spinning
-                          ? 'none'
-                          : '0 8px 25px rgba(0,0,0,0.5), inset 0 2px 12px rgba(255,255,255,0.15), inset 0 -2px 8px rgba(0,0,0,0.3)',
-                        border: '2px solid #FFFFFF',
-                        background: spinning ? '#6B7280' : 'linear-gradient(135deg, #000000 0%, #1F2937 50%, #000000 100%)'
-                      }}
-                    >
-                      {spinning ? (
-                        <span className="flex items-center justify-center h-full">
-                          <span className="inline-block w-4 h-4 md:w-5 md:h-5 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
-                        </span>
-                      ) : (
-                        <>
-                          <span className="relative z-10 flex items-center justify-center h-full">
-                            <svg className="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                          </span>
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                        </>
-                      )}
-                    </button>
-
-                    {/* Plus Button */}
-                    <button
-                      onClick={() => {
-                        playClickSound()
-                        const currentBet = parseFloat(betAmount) || 0
-                        const currentBalance = parseFloat(balance) || 0
-                        const newBet = Math.min(currentBalance, currentBet + 1)
-                        setBetAmount(newBet.toString())
-                      }}
-                      disabled={spinning || parseFloat(betAmount) >= parseFloat(balance)}
-                      className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 hover:bg-white/30 text-white font-bold text-base md:text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center hover:scale-110 active:scale-95"
-                      title="Increase Bet"
-                      style={{
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                      }}
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  {/* Auto Play Button - Below Spin Button */}
-                  <button
-                    onClick={() => {
-                      if (autoSpin) {
-                        playClickSound()
-                        setAutoSpin(false)
-                        setAutoSpinCount(0)
-                      } else {
-                        handleAutoSpin(10)
-                      }
-                    }}
-                    disabled={spinning || autoSpin || parseFloat(betAmount) <= 0 || parseFloat(betAmount) > balance}
-                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-white font-bold text-xs transition-all ${autoSpin
-                      ? 'bg-red-600 hover:bg-red-700'
-                      : 'bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
-                      }`}
-                  >
-                    {autoSpin ? 'OTOMATİK OYUN DURDUR' : 'OTOMATİK OYUN'}
-                  </button>
-                  {autoSpin && autoSpinCount > 0 && (
-                    <div className="text-white text-xs">
-                      {autoSpinCount} kalan
-                    </div>
-                  )}
-                </div>
-              </div>
+            {/* Bet Amount */}
+            <div className="text-white font-bold">
+              <div className="text-xs opacity-80">BAHİS</div>
+              <div className="text-xs md:text-sm">₺{parseFloat(betAmount) || 0}.00</div>
             </div>
           </div>
 
+          {/* Center - Turbo Spin Instruction - Exact Match */}
+          <div className="flex-1 text-center hidden md:block">
+            <p className="text-white text-xs font-medium opacity-90">
+              TURBO SPİN İÇİN BOŞLUK TUŞUNA BASILI TUTUN
+            </p>
+          </div>
+
+          {/* Right Side - Spin Button with +/- and Auto Play - Exact Match */}
+          <div className="flex flex-col items-center gap-2">
+            {/* Spin Button with +/- buttons */}
+            <div className="flex items-center gap-1 md:gap-2">
+              {/* Minus Button */}
+              <button
+                onClick={() => {
+                  playClickSound()
+                  const currentBet = parseFloat(betAmount) || 0
+                  const newBet = Math.max(1, currentBet - 1)
+                  setBetAmount(newBet.toString())
+                }}
+                disabled={spinning || parseFloat(betAmount) <= 1}
+                className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 hover:bg-white/30 text-white font-bold text-base md:text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center hover:scale-110 active:scale-95"
+                title="Decrease Bet"
+              >
+                -
+              </button>
+
+              {/* Large Circular Spin Button - Exact Match */}
+              <button
+                onClick={spinReels}
+                disabled={spinning || parseFloat(betAmount) <= 0 || parseFloat(betAmount) > balance}
+                className={`relative w-16 h-16 md:w-20 md:h-20 rounded-full font-black transition-all transform overflow-hidden group ${spinning
+                  ? 'bg-gray-500 cursor-not-allowed'
+                  : 'bg-black hover:scale-110 active:scale-95 text-white'
+                  }`}
+                style={{
+                  boxShadow: spinning ? 'none' : '0 8px 25px rgba(0,0,0,0.5)',
+                  border: '2px solid #FFFFFF',
+                  background: spinning ? '#6B7280' : 'linear-gradient(135deg, #000000 0%, #1F2937 50%, #000000 100%)'
+                }}
+              >
+                {spinning ? (
+                  <span className="flex items-center justify-center h-full">
+                    <span className="inline-block w-4 h-4 md:w-5 md:h-5 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center h-full text-2xl">🔄</span>
+                )}
+              </button>
+
+              {/* Plus Button */}
+              <button
+                onClick={() => {
+                  playClickSound()
+                  const currentBet = parseFloat(betAmount) || 0
+                  const currentBalance = parseFloat(balance) || 0
+                  const newBet = Math.min(currentBalance, currentBet + 1)
+                  setBetAmount(newBet.toString())
+                }}
+                disabled={spinning || parseFloat(betAmount) >= parseFloat(balance)}
+                className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 hover:bg-white/30 text-white font-bold text-base md:text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center hover:scale-110 active:scale-95"
+                title="Increase Bet"
+              >
+                +
+              </button>
+            </div>
+
+            {/* Auto Play Button - Below Spin Button */}
+            <button
+              onClick={() => {
+                if (autoSpin) {
+                  playClickSound()
+                  setAutoSpin(false)
+                  setAutoSpinCount(0)
+                } else {
+                  handleAutoSpin(10)
+                }
+              }}
+              disabled={spinning || autoSpin || parseFloat(betAmount) <= 0 || parseFloat(betAmount) > balance}
+              className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-white font-bold text-xs transition-all ${autoSpin
+                ? 'bg-red-600 hover:bg-red-700'
+                : 'bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                }`}
+            >
+              {autoSpin ? 'DURDUR' : 'OTOMATİK'}
+            </button>
+          </div>
         </div>
       </main>
 
-
       {/* Game Rules Modal */}
       {showGameRules && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-2 sm:p-4" onClick={() => setShowGameRules(false)}>
-          <div className="bg-gradient-to-br from-[#1a0f2e] via-[#2d1b4e] to-[#1a0f2e] rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 max-w-2xl w-full mx-2 sm:mx-4 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto border-2 border-white/20 shadow-2xl custom-scrollbar" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 pr-2">
-                SWEET BONANZA - GAME RULES
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => setShowGameRules(false)}>
+          <div className="bg-gradient-to-br from-[#1a0f2e] via-[#2d1b4e] to-[#1a0f2e] rounded-2xl p-6 md:p-8 max-w-2xl w-full border-2 border-white/20 shadow-2xl overflow-y-auto max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">
+                GAME RULES
               </h2>
-              <button
-                onClick={() => {
-                  playClickSound()
-                  setShowGameRules(false)
-                }}
-                className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all flex-shrink-0"
-                aria-label="Close"
-              >
-                <span className="material-symbols-outlined text-white text-lg md:text-xl">close</span>
-              </button>
+              <button onClick={() => setShowGameRules(false)} className="text-white">Close</button>
             </div>
-
-            <div className="space-y-4 md:space-y-6 text-white">
-              {/* Game Overview */}
-              <div>
-                <h3 className="text-lg md:text-xl font-bold mb-2 md:mb-3 text-yellow-400">Game Overview</h3>
-                <p className="text-white/80 leading-relaxed text-sm md:text-base">
-                  Sweet Bonanza is a 6-reel, 5-row slot game with a cluster pays mechanic. Match symbols horizontally or vertically to win!
-                </p>
-              </div>
-
-              {/* How to Play */}
-              <div>
-                <h3 className="text-lg md:text-xl font-bold mb-2 md:mb-3 text-yellow-400">How to Play</h3>
-                <ul className="space-y-2 text-white/80 list-disc list-inside text-sm md:text-base">
-                  <li>Set your bet amount using the +/- buttons or quick bet options</li>
-                  <li>Click the SPIN button to start the game</li>
-                  <li>Match 8 or more identical symbols anywhere on the reels to win</li>
-                  <li>Symbols can connect horizontally or vertically</li>
-                  <li>More symbols = Higher multiplier!</li>
-                </ul>
-              </div>
-
-              {/* Symbol Multipliers */}
-              <div>
-                <h3 className="text-lg md:text-xl font-bold mb-2 md:mb-3 text-yellow-400">Symbol Multipliers</h3>
-                <div className="grid grid-cols-3 gap-2 md:gap-3">
-                  <div className="bg-white/10 rounded-lg p-2 md:p-3 flex items-center justify-between">
-                    <span className="text-2xl md:text-3xl">💎</span>
-                    <span className="font-bold text-yellow-400 text-sm md:text-base">100x</span>
-                  </div>
-                  <div className="bg-white/10 rounded-lg p-2 md:p-3 flex items-center justify-between">
-                    <span className="text-2xl md:text-3xl">⭐</span>
-                    <span className="font-bold text-yellow-400 text-sm md:text-base">50x</span>
-                  </div>
-                  <div className="bg-white/10 rounded-lg p-2 md:p-3 flex items-center justify-between">
-                    <span className="text-2xl md:text-3xl">🍓</span>
-                    <span className="font-bold text-pink-400 text-sm md:text-base">20x</span>
-                  </div>
-                  <div className="bg-white/10 rounded-lg p-2 md:p-3 flex items-center justify-between">
-                    <span className="text-2xl md:text-3xl">🍎</span>
-                    <span className="font-bold text-red-400 text-sm md:text-base">15x</span>
-                  </div>
-                  <div className="bg-white/10 rounded-lg p-2 md:p-3 flex items-center justify-between">
-                    <span className="text-2xl md:text-3xl">🍌</span>
-                    <span className="font-bold text-yellow-300 text-sm md:text-base">12x</span>
-                  </div>
-                  <div className="bg-white/10 rounded-lg p-2 md:p-3 flex items-center justify-between">
-                    <span className="text-2xl md:text-3xl">🍉</span>
-                    <span className="font-bold text-green-400 text-sm md:text-base">10x</span>
-                  </div>
-                  <div className="bg-white/10 rounded-lg p-2 md:p-3 flex items-center justify-between">
-                    <span className="text-2xl md:text-3xl">🍊</span>
-                    <span className="font-bold text-orange-400 text-sm md:text-base">8x</span>
-                  </div>
-                  <div className="bg-white/10 rounded-lg p-2 md:p-3 flex items-center justify-between">
-                    <span className="text-2xl md:text-3xl">🍋</span>
-                    <span className="font-bold text-yellow-300 text-sm md:text-base">6x</span>
-                  </div>
-                  <div className="bg-white/10 rounded-lg p-2 md:p-3 flex items-center justify-between">
-                    <span className="text-2xl md:text-3xl">🍇</span>
-                    <span className="font-bold text-purple-400 text-sm md:text-base">5x</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Special Features */}
-              <div>
-                <h3 className="text-lg md:text-xl font-bold mb-2 md:mb-3 text-yellow-400">Special Features</h3>
-                <ul className="space-y-2 text-white/80 text-sm md:text-base">
-                  <li><strong className="text-white">Scatter Symbols (⭐ and 💎):</strong> Can appear anywhere and count towards cluster wins</li>
-                  <li><strong className="text-white">Free Spins:</strong> Triggered by 3+ scatter symbols</li>
-                  <li><strong className="text-white">Random Multiplier:</strong> Up to 100x multiplier in free spins</li>
-                  <li><strong className="text-white">Tumble Feature:</strong> Winning symbols disappear and new ones fall down</li>
-                </ul>
-              </div>
-
-              {/* Winning Rules */}
-              <div>
-                <h3 className="text-lg md:text-xl font-bold mb-2 md:mb-3 text-yellow-400">Winning Rules</h3>
-                <ul className="space-y-2 text-white/80 list-disc list-inside text-sm md:text-base">
-                  <li>Minimum 8 matching symbols required for a win</li>
-                  <li>Symbols must be adjacent (horizontally or vertically)</li>
-                  <li>Wins are calculated based on symbol multiplier × bet amount</li>
-                  <li>Multiple clusters can win simultaneously</li>
-                  <li>Maximum win: 21,100x your bet!</li>
-                </ul>
-              </div>
-
-              {/* Volatility */}
-              <div>
-                <h3 className="text-lg md:text-xl font-bold mb-2 md:mb-3 text-yellow-400">Volatility</h3>
-                <p className="text-white/80 text-sm md:text-base">
-                  This game has <strong className="text-yellow-400">HIGH VOLATILITY</strong> (5/5).
-                  This means wins may be less frequent but can be significantly larger when they occur.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 md:mt-6 flex justify-end">
-              <button
-                onClick={() => {
-                  playClickSound()
-                  setShowGameRules(false)
-                }}
-                className="px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold rounded-lg transition-all text-sm md:text-base min-h-[44px]"
-              >
-                Close
-              </button>
+            <div className="text-white space-y-4">
+              <p>Match 8+ symbols to win. Tumble feature applies on all wins. Ultra, Mega, and Big wins depend on payout size relative to bet.</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Custom Animations */}
+      {/* Optimized Styles */}
       <style jsx>{`
-          @keyframes winningGlow {
-            0%, 100% {
-              box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-              transform: scale(1);
-            }
-            50% {
-              box-shadow: 0 0 40px rgba(255, 215, 0, 1);
-              transform: scale(1.1);
-            }
-          }
-          
-          @keyframes gradientShift {
-            0%, 100% {
-              background-position: 0% 50%;
-            }
-            50% {
-              background-position: 100% 50%;
-            }
-          }
-          
-          .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-          }
-          
-          .custom-scrollbar::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-          }
-          
-          .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, #ff6b9d, #9333ea);
-            border-radius: 10px;
-          }
-          
-          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(to bottom, #ff8fb3, #a855f7);
-          }
-          
-          /* Mobile Optimizations */
-          @media (max-width: 640px) {
-            /* Ensure touch targets are at least 44x44px */
-            button {
-              min-height: 44px;
-              min-width: 44px;
-            }
-            
-            /* Improve readability on small screens */
-            body {
-              -webkit-text-size-adjust: 100%;
-              -moz-text-size-adjust: 100%;
-              text-size-adjust: 100%;
-            }
-            
-            /* Prevent horizontal scroll */
-            * {
-              max-width: 100%;
-            }
-            
-            /* Optimize animations for mobile performance */
-            .animate-spin,
-            .animate-pulse,
-            .animate-bounce {
-              will-change: transform;
-            }
-          }
-          
-          /* Tablet optimizations */
-          @media (min-width: 641px) and (max-width: 1024px) {
-            /* Adjust spacing for tablets */
-            .game-container {
-              padding: 1rem;
-            }
-          }
-          
-          /* Laptop optimizations - Make game smaller */
-          @media (min-width: 1025px) and (max-width: 1440px) {
-            /* Scale down game area for laptop screens */
-            .game-area-laptop {
-              transform: scale(0.85) !important;
-              transform-origin: center top;
-            }
-          }
-          
-          /* Prevent text selection on game elements */
-          .game-area * {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-          }
-          
-          /* Improve touch interactions */
-          @media (hover: none) and (pointer: coarse) {
-            button:active {
-              transform: scale(0.95);
-            }
-          }
-        `}</style>
+        @keyframes pop {
+          0% { transform: scale(1) translateZ(0); }
+          50% { transform: scale(1.25) translateZ(0); }
+          100% { transform: scale(1) translateZ(0); }
+        }
+        .animate-pop {
+          animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+          will-change: transform;
+        }
+        @keyframes reel-spin {
+          0% { transform: translateY(-4px) translateZ(0); }
+          50% { transform: translateY(4px) translateZ(0); }
+          100% { transform: translateY(-4px) translateZ(0); }
+        }
+        .animate-reel-spin {
+          animation: reel-spin 0.08s linear infinite;
+          will-change: transform;
+        }
+        @keyframes fall {
+          0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+          10% { opacity: 1; }
+          100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+        .animate-fall {
+          animation: fall linear forwards;
+        }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 15s linear infinite;
+        }
+        @keyframes bounce-in {
+          0% { transform: scale(0.3); opacity: 0; }
+          50% { transform: scale(1.05); }
+          70% { transform: scale(0.9); }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-bounce-in {
+          animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+      `}</style>
     </div>
   )
 }
