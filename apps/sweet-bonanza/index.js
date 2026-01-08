@@ -37,41 +37,35 @@ const WinCelebration = ({ amount, betAmount }) => {
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
 
-    const coins = []
-    const COIN_EMOJI = '🪙'
+    const coinImg = new Image()
+    coinImg.src = '/games/sweet-bonanza-1000/coin.png'
 
+    const coins = []
     class Coin {
       constructor() {
         this.reset()
-        this.y = Math.random() * -canvas.height // Start scattered above
+        this.y = Math.random() * -canvas.height
       }
       reset() {
         this.x = Math.random() * canvas.width
         this.y = -100
-        this.size = Math.random() * 40 + 30
+        this.size = Math.random() * 50 + 40
         this.speedY = Math.random() * 8 + 5
         this.rotation = Math.random() * 360
         this.rotationSpeed = Math.random() * 10 - 5
-        this.opacity = 1
       }
       update() {
         this.y += this.speedY
         this.rotation += this.rotationSpeed
-        if (this.y > canvas.height) {
-          this.reset()
-        }
+        if (this.y > canvas.height) this.reset()
       }
       draw() {
         ctx.save()
         ctx.translate(this.x, this.y)
         ctx.rotate((this.rotation * Math.PI) / 180)
-        ctx.font = `${this.size}px serif`
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        // Add shadow for glow
-        ctx.shadowBlur = 15
-        ctx.shadowColor = 'rgba(255, 215, 0, 0.8)'
-        ctx.fillText(COIN_EMOJI, 0, 0)
+        ctx.shadowBlur = 10
+        ctx.shadowColor = 'rgba(255, 215, 0, 0.5)'
+        ctx.drawImage(coinImg, -this.size / 2, -this.size / 2, this.size, this.size)
         ctx.restore()
       }
     }
@@ -276,7 +270,7 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
   const [spinning, setSpinning] = useState(false)
   // 6 columns x 5 rows grid (matching original game)
   const [reels, setReels] = useState(
-    Array(6).fill(null).map(() => Array(5).fill('🍇'))
+    Array(6).fill(null).map(() => Array(5).fill('apple'))
   )
   const [winAmount, setWinAmount] = useState(0)
   const [gameHistory, setGameHistory] = useState([])
@@ -289,6 +283,7 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
   const [showFireworks, setShowFireworks] = useState(false)
   const [balanceHistory, setBalanceHistory] = useState([]) // Track balance changes with percentages
   const [reelSpeeds, setReelSpeeds] = useState([0, 0, 0, 0, 0, 0]) // Individual reel speeds for realistic spinning
+  const reelSpeedsRef = useRef([0, 0, 0, 0, 0, 0])
   const reelRefs = useRef([])
   const [musicEnabled, setMusicEnabled] = useState(true)
   const [soundEnabled, setSoundEnabled] = useState(true)
@@ -324,11 +319,24 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  const symbols = ['🍇', '🍊', '🍋', '🍉', '🍌', '🍎', '🍓', '⭐', '💎']
-  // Weighted symbols for more realistic gameplay (lower value = more common)
+  const SYMBOL_ASSETS = {
+    'apple': '/games/sweet-bonanza-1000/apple.png',
+    'banana': '/games/sweet-bonanza-1000/banana.png',
+    'grapes': '/games/sweet-bonanza-1000/grapes.png',
+    'watermelon': '/games/sweet-bonanza-1000/watermelon.png',
+    'plum': '/games/sweet-bonanza-1000/plum.png',
+    'heart': '/games/sweet-bonanza-1000/heart_premium.png',
+    'oval': '/games/sweet-bonanza-1000/oval.png',
+    'pentagon': '/games/sweet-bonanza-1000/pentagon.png',
+    'square': '/games/sweet-bonanza-1000/square.png',
+    'scatter': '/games/sweet-bonanza-1000/scatter.png'
+  }
+
+  const symbols = ['grapes', 'plum', 'watermelon', 'banana', 'apple', 'heart', 'oval', 'pentagon', 'square']
+  // Weighted symbols for more realistic gameplay (higher value = more common)
   const symbolWeights = {
-    '🍇': 30, '🍊': 25, '🍋': 20, '🍉': 15, '🍌': 12,
-    '🍎': 8, '🍓': 5, '⭐': 3, '💎': 2
+    'grapes': 30, 'plum': 25, 'watermelon': 20, 'banana': 15, 'apple': 12,
+    'heart': 8, 'oval': 5, 'pentagon': 3, 'square': 2
   }
   const quickBetAmounts = ['10', '50', '100', '500', '1000']
 
@@ -539,7 +547,7 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
         return symbol
       }
     }
-    return '🍇' // Fallback
+    return 'grapes' // Fallback
   }
 
   // Calculate financial flow with percentages
@@ -615,30 +623,29 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
     const bet = parseFloat(betAmount) || 0
     const winningPositions = []
 
-    Object.values(symbolCounts).forEach(({ symbol, position, count, positions }) => {
-      if (count >= 3) {
+    Object.values(symbolCounts).forEach(({ symbol, count, positions }) => {
+      if (count >= 8) { // Sweet Bonanza standard is 8+ for a win
         const multipliers = {
-          '💎': 100,
-          '⭐': 50,
-          '🍓': 20,
-          '🍎': 15,
-          '🍌': 12,
-          '🍉': 10,
-          '🍋': 8,
-          '🍊': 6,
-          '🍇': 5
+          'heart': 50,
+          'square': 25,
+          'pentagon': 15,
+          'oval': 10,
+          'apple': 8,
+          'plum': 5,
+          'watermelon': 4,
+          'grapes': 3,
+          'banana': 2
         }
-        const baseMultiplier = multipliers[symbol] || 5
-        const multiplier = baseMultiplier * (count - 2)
-        const win = bet * multiplier
+        const baseMultiplier = multipliers[symbol] || 2
+        const win = bet * baseMultiplier * (count / 8)
         totalWin += win
         winningPositions.push(...positions)
       }
     })
 
-    const scatterCount = reelResult.flat().filter(s => s === '⭐' || s === '💎').length
-    if (scatterCount >= 3) {
-      const scatterMultiplier = scatterCount === 3 ? 2 : scatterCount === 4 ? 5 : scatterCount >= 5 ? 10 : 0
+    const scatterCount = reelResult.flat().filter(s => s === 'scatter').length
+    if (scatterCount >= 4) { // 4+ lollipops for free spins/big wins
+      const scatterMultiplier = scatterCount === 4 ? 3 : scatterCount === 5 ? 5 : scatterCount >= 6 ? 10 : 0
       totalWin += bet * scatterMultiplier
     }
 
@@ -691,105 +698,130 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
     playClickSound()
 
     const initialBalance = balance
+    const apiDataRef = { current: null }; // Local ref to track when API returns
 
-    // Optimized Spinning Animation Logic
-    const baseSpinDuration = 2000
-    const reelStopDelays = [0, 200, 400, 600, 800, 1000]
-    const startTime = Date.now()
+    // Start all reels spinning
+    reelSpeedsRef.current = [100, 100, 100, 100, 100, 100]
+    setReelSpeeds([...reelSpeedsRef.current])
 
-    setReelSpeeds([100, 100, 100, 100, 100, 100])
-
-    const intervalId = setInterval(() => {
-      const now = Date.now()
-      const elapsed = now - startTime
-
+    // --- INFINITE SCROLLING ANIMATION ---
+    const animationInterval = setInterval(() => {
       setReels(prevReels => {
-        let changed = false
         const newReels = [...prevReels]
-
+        let anySpinning = false
         for (let i = 0; i < 6; i++) {
-          const reelTargetDuration = baseSpinDuration + reelStopDelays[i]
-          if (elapsed < reelTargetDuration) {
+          if (reelSpeedsRef.current[i] > 0) {
             newReels[i] = Array(5).fill(null).map(() => getWeightedSymbol())
-            changed = true
+            anySpinning = true
           }
         }
-
-        return changed ? newReels : prevReels
+        return anySpinning ? newReels : prevReels
       })
-
-      // Update reel speeds
-      setReelSpeeds(prevSpeeds => {
-        const newSpeeds = [...prevSpeeds]
-        let changed = false
-        for (let i = 0; i < 6; i++) {
-          const reelTargetDuration = baseSpinDuration + reelStopDelays[i]
-          if (elapsed >= reelTargetDuration && newSpeeds[i] !== 0) {
-            newSpeeds[i] = 0
-            changed = true
-          }
-        }
-        return changed ? newSpeeds : prevSpeeds
-      })
-
-      // Check if all reels stopped
-      if (elapsed > baseSpinDuration + 1000) {
-        clearInterval(intervalId)
-      }
-    }, 60) // Slightly slower interval for performance, still looks smooth
+    }, 150); // Slower updates because CSS handles the spin
 
     try {
-      // Call backend API to play game
-      const response = await sweetBonanzaAPI.playGame(bet)
-      const gameData = response.data?.data || response.data
+      let gameData;
+      const isMock = localStorage.getItem('token')?.startsWith('mock');
 
-      // Ensure we wait at least for the maximum Reel stop delay
-      await new Promise(resolve => setTimeout(resolve, baseSpinDuration + 1000))
+      if (isMock) {
+        // --- REAL-TIME MOCK WAITING FOR ADMIN ---
+        localStorage.setItem('mock-spin-request', JSON.stringify({
+          _id: 'mock-spin-' + Date.now(),
+          username: user?.username || 'MockUser',
+          betAmount: bet,
+          gameType: 'sweet-bonanza',
+          createdAt: new Date().toISOString()
+        }))
 
-      // Set final reels from backend
-      const finalReels = gameData.reels || []
-      const formattedReels = finalReels.length === 6 && finalReels.every(reel => Array.isArray(reel) && reel.length === 5)
-        ? finalReels
-        : Array(6).fill(null).map(() => Array(5).fill(null).map(() => getWeightedSymbol()))
+        localStorage.removeItem('mock-game-decision')
 
-      setReels(formattedReels)
-      setReelSpeeds([0, 0, 0, 0, 0, 0])
+        let decision = null
+        const pollStartTime = Date.now()
+        // Poll for up to 30 seconds
+        while (!decision && Date.now() - pollStartTime < 30000) {
+          await new Promise(resolve => setTimeout(resolve, 500))
+          decision = localStorage.getItem('mock-game-decision')
+        }
+
+        localStorage.removeItem('mock-game-decision')
+        localStorage.removeItem('mock-spin-request') // Cleanup if timeout
+
+        // Generate result based on decision
+        let localWinAmount = 0
+        const resultSymbols = ['heart', 'apple', 'banana', 'grapes', 'plum', 'watermelon', 'oval', 'pentagon', 'square'];
+        let finalReels = Array(6).fill(null).map(() => Array(5).fill(null).map(() => getWeightedSymbol()))
+
+        if (decision === 'win') {
+          localWinAmount = bet * (Math.floor(Math.random() * 8) + 3)
+          // Force a win by placing matching symbols
+          const winSymbol = resultSymbols[Math.floor(Math.random() * resultSymbols.length)]
+          // Place 8 to 12 symbols of the same type randomly to ensure a win feel
+          const winCount = Math.floor(Math.random() * 5) + 8;
+          for (let i = 0; i < winCount; i++) {
+            const r = Math.floor(Math.random() * 6);
+            const s = Math.floor(Math.random() * 5);
+            finalReels[r][s] = winSymbol;
+          }
+        } else {
+          localWinAmount = 0
+          // For loss, ensure we don't accidentally have too many matching symbols
+          // We'll just let the random generation handle it, or we could explicitly limit counts
+          // but random is usually fine for a 6x5 grid.
+        }
+
+        gameData = {
+          reels: finalReels,
+          winAmount: localWinAmount,
+          netChange: localWinAmount - bet,
+          userBalance: balance - bet + localWinAmount,
+          percentageChange: bet > 0 ? (localWinAmount / bet) * 100 : 0
+        }
+      } else {
+        const response = await sweetBonanzaAPI.playGame(bet);
+        gameData = response.data?.data || response.data;
+      }
+
+      // 1. Staggered STOP sequence
+      for (let i = 0; i < 6; i++) {
+        await new Promise(resolve => setTimeout(resolve, 600)); // Longer delay for feel
+
+        // Stop spinning for this reel
+        reelSpeedsRef.current[i] = 0;
+        setReelSpeeds([...reelSpeedsRef.current]);
+
+        setReels(prev => {
+          const next = [...prev];
+          next[i] = gameData.reels[i];
+          return next;
+        });
+      }
+
+      // 2. Finally clear the global animation interval once everything is stopped
+      clearInterval(animationInterval);
 
       const win = gameData.winAmount || 0
-      const netChange = gameData.netChange || 0
-      const percentageChange = gameData.percentageChange || 0
-      // Get updated main balance from server (this is the deposited balance)
       const newBalance = gameData.userBalance || gameData.newBalance || balance
 
       setWinAmount(win)
-      setBalance(newBalance) // Update local state with main balance
+      setBalance(newBalance)
       setWinningSymbols(gameData.winningPositions || [])
 
-      // Calculate financial flow
+      // Update financial flow
       const flow = calculateFinancialFlow(initialBalance, bet, win)
       addToBalanceHistory(flow)
 
+      if (user) {
+        const updatedUser = { ...user, balance: newBalance };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        window.dispatchEvent(new CustomEvent('userDataUpdated', { detail: updatedUser }));
+      }
+
       if (win > 0) {
-        setSuccess(`🎉 You won ₺${win.toFixed(2)}! (+${percentageChange.toFixed(2)}%)`)
+        setSuccess(`🎉 You won ₺${win.toFixed(2)}!`)
         setIsWinning(true)
         setShowWinAnimation(true)
         setShowFireworks(true)
-
-        // Play win sound
-        if (win >= bet * 10) {
-          playSound('bigWin', 0.8)
-        } else {
-          playSound('win', 0.6)
-        }
-
-        setGameHistory(prev => [{
-          id: Date.now(),
-          bet,
-          win,
-          result: finalReels,
-          timestamp: new Date(),
-          percentageChange: percentageChange
-        }, ...prev].slice(0, 10))
+        win >= bet * 10 ? playSound('bigWin', 0.8) : playSound('win', 0.6)
 
         setTimeout(() => {
           setIsWinning(false)
@@ -797,98 +829,18 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
           setShowFireworks(false)
         }, 5000)
       } else {
-        setError('Better luck next time!')
         setShowLossAnimation(true)
-        // Play loss sound
-        playSound('loss', 0.5)
-
-        setTimeout(() => {
-          setShowLossAnimation(false)
-        }, 3000)
+        playSound('loss', 0.4)
+        setTimeout(() => setShowLossAnimation(false), 3000)
       }
-
-      // Update user data with new main balance (from deposits)
-      // This syncs with navbar and other components
-      if (user) {
-        const updatedUser = { ...user, balance: newBalance }
-        updateUserData(updatedUser) // Updates localStorage and triggers navbar update
-        setUser(updatedUser)
-      }
-
-      // Refresh user data from server to ensure sync with main balance
-      // This ensures the balance displayed is the actual deposited balance
-      // Use setTimeout to prevent race conditions and allow UI to update first
-      setTimeout(async () => {
-        try {
-          await fetchUserData()
-        } catch (fetchErr) {
-          // Silently handle fetch errors - balance is already updated from game response
-          if (process.env.NODE_ENV === 'development') {
-            console.warn('Sweet Bonanza - Error refreshing user data:', fetchErr)
-          }
-        }
-      }, 500)
     } catch (err) {
-      // Stop animations on error
+      clearInterval(animationInterval);
+      log.apiError('playGame', err)
       setReelSpeeds([0, 0, 0, 0, 0, 0])
-
-      // Handle different error types
-      let errorMessage = 'Failed to play game'
-
-      if (err.response?.data?.message) {
-        errorMessage = err.response.data.message
-      } else if (err.response?.data?.error) {
-        errorMessage = err.response.data.error
-      } else if (err.message) {
-        errorMessage = err.message
-      }
-
-      // Handle specific error codes
-      if (err.response?.status === 400) {
-        // Bad request - validation error
-        errorMessage = errorMessage || 'Invalid request. Please check your bet amount.'
-      } else if (err.response?.status === 401) {
-        // Unauthorized - session expired
-        errorMessage = 'Session expired. Please log in again.'
-        // Optionally redirect to login
-        setTimeout(() => {
-          router.push('/auth/login')
-        }, 2000)
-      } else if (err.response?.status === 403) {
-        // Forbidden - account not active
-        errorMessage = errorMessage || 'Account is not active'
-      } else if (err.response?.status === 404) {
-        // Not found
-        errorMessage = 'User not found'
-      } else if (err.response?.status === 500) {
-        // Server error
-        errorMessage = 'Server error. Please try again later.'
-      } else if (!err.response) {
-        // Network error
-        errorMessage = 'Network error. Please check your connection.'
-      }
-
-      setError(errorMessage)
-
-      // Log error in development
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Sweet Bonanza - Game error:', err)
-        console.error('Sweet Bonanza - Error response:', err.response)
-      }
-
-      log.apiError('/sweet-bonanza/play', err)
-
-      // Refresh balance on error to ensure sync
-      try {
-        await fetchUserData()
-      } catch (fetchErr) {
-        // Ignore fetch errors on error recovery
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Sweet Bonanza - Error fetching user data after game error:', fetchErr)
-        }
-      }
+      setError(err.response?.data?.message || err.message || 'Failed to process spin.')
     } finally {
       setSpinning(false)
+      setTimeout(() => fetchUserData(), 500)
     }
   }
 
@@ -978,21 +930,36 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
         }}></div>
 
         {/* Scattered candies and fruits at bottom - Exact positions from screenshot */}
-        <div className="absolute  bottom-20 left-16 text-8xl" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>🍎</div>
-        <div className="absolute bottom-24 right-28 text-7xl" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>🍌</div>
-        <div className="absolute bottom-28 left-1/4 text-6xl" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>🍉</div>
-        <div className="absolute bottom-22 right-1/3 text-7xl" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>🍓</div>
-        <div className="absolute bottom-26 left-1/2 text-6xl" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>💎</div>
-        <div className="absolute bottom-20 left-2/3 text-5xl" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>🍇</div>
-        <div className="absolute bottom-24 right-16 text-6xl" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>🍊</div>
-        <div className="absolute bottom-18 left-3/4 text-5xl" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>🍋</div>
+        <div className="absolute bottom-20 left-16 w-32 h-32 opacity-80" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>
+          <img src={SYMBOL_ASSETS['apple']} className="w-full h-full object-contain" />
+        </div>
+        <div className="absolute bottom-24 right-28 w-28 h-28 opacity-80" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>
+          <img src={SYMBOL_ASSETS['banana']} className="w-full h-full object-contain" />
+        </div>
+        <div className="absolute bottom-28 left-1/4 w-24 h-24 opacity-80" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>
+          <img src={SYMBOL_ASSETS['watermelon']} className="w-full h-full object-contain" />
+        </div>
+        <div className="absolute bottom-22 right-1/3 w-28 h-28 opacity-80" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>
+          <img src={SYMBOL_ASSETS['heart']} className="w-full h-full object-contain" />
+        </div>
+        <div className="absolute bottom-26 left-1/2 w-24 h-24 opacity-80" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>
+          <img src={SYMBOL_ASSETS['square']} className="w-full h-full object-contain" />
+        </div>
+        <div className="absolute bottom-20 left-2/3 w-20 h-20 opacity-80" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>
+          <img src={SYMBOL_ASSETS['grapes']} className="w-full h-full object-contain" />
+        </div>
+        <div className="absolute bottom-18 left-3/4 w-20 h-20 opacity-80" style={{ filter: 'drop-shadow(3px 3px 6px rgba(0,0,0,0.4))', zIndex: 5 }}>
+          <img src={SYMBOL_ASSETS['plum']} className="w-full h-full object-contain" />
+        </div>
 
-        {/* Large lollipop/swirl candy at bottom center - Exact Match */}
-        <div className="absolute bottom-0 left-1/2 text-9xl" style={{
+        {/* Large lollipop/swirl candy at bottom center */}
+        <div className="absolute bottom-0 left-1/2 w-48 h-48" style={{
           filter: 'drop-shadow(4px 4px 8px rgba(0,0,0,0.5))',
           transform: 'translateX(-50%) translateY(30px)',
           zIndex: 6
-        }}>🍭</div>
+        }}>
+          <img src={SYMBOL_ASSETS['scatter']} className="w-full h-full object-contain" />
+        </div>
 
         {/* Swirling pink and white candy structures */}
         <div className="absolute bottom-32 left-1/5 w-16 h-32 bg-gradient-to-b from-pink-200 via-white to-pink-200 rounded-full transform rotate-12 opacity-80" style={{
@@ -1106,35 +1073,73 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
                 <div className="grid grid-cols-6 gap-2 relative z-10 w-full" style={{
                   aspectRatio: '6/5'
                 }}>
-                  {reels.map((reel, reelIndex) =>
-                    reel.map((symbol, symbolIndex) => {
-                      const isWinning = isWinningPosition(reelIndex, symbolIndex)
-                      const isReelSpinning = spinning && reelSpeeds[reelIndex] > 0
-                      return (
-                        <div
-                          key={`${reelIndex}-${symbolIndex}`}
-                          className={`aspect-square flex items-center justify-center rounded-xl border-2 transition-all duration-300 relative overflow-hidden ${isReelSpinning
-                            ? 'bg-purple-300'
-                            : isWinning
-                              ? 'bg-yellow-400 border-yellow-600 scale-110 z-20'
-                              : 'bg-white border-gray-200'
-                            }`}
-                          style={{
-                            boxShadow: isWinning ? '0 0 25px rgba(255, 215, 0, 1)' : '0 4px 8px rgba(0,0,0,0.1)',
-                            willChange: 'transform',
-                            transform: isWinning ? 'scale(1.1) translateZ(0)' : 'translateZ(0)'
-                          }}
-                        >
-                          <span className={`${isReelSpinning ? 'animate-reel-spin' : ''} ${isWinning ? 'animate-pop' : ''}`} style={{
-                            fontSize: 'clamp(1.5rem, 5vw, 3.5rem)',
-                            filter: isReelSpinning ? 'blur(2px)' : 'none'
-                          }}>
-                            {symbol}
+                  {/* Status Overlay for Admin Decision */}
+                  {spinning && (
+                    <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+                      <div className="bg-black/70 backdrop-blur-xl px-8 py-5 rounded-3xl border-2 border-primary/50 animate-pulse shadow-[0_0_50px_rgba(255,215,0,0.3)]">
+                        <div className="flex flex-col items-center gap-2">
+                          <span className="text-primary font-black text-lg md:text-2xl italic tracking-[0.2em] text-center">
+                            HOLD TIGHT!
+                          </span>
+                          <span className="text-white font-bold text-xs md:text-sm uppercase tracking-widest text-center opacity-80">
+                            The Sugar Boss is deciding your fate... 🍭
                           </span>
                         </div>
-                      )
-                    })
+                      </div>
+                    </div>
                   )}
+
+                  {/* Better Luck Next Time Overlay */}
+                  {showLossAnimation && (
+                    <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none animate-in fade-in zoom-in duration-300">
+                      <div className="bg-red-500/90 backdrop-blur-md px-10 py-8 rounded-full border-4 border-white shadow-2xl rotate-[-5deg]">
+                        <span className="text-white font-black text-2xl md:text-4xl uppercase italic tracking-tighter drop-shadow-lg">
+                          Better Luck<br />Next Time! 💔
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {reels.map((reel, reelIndex) => {
+                    const isReelSpinning = spinning && (reelSpeeds[reelIndex] > 0 || reelSpeedsRef.current[reelIndex] > 0)
+                    return (
+                      <div
+                        key={reelIndex}
+                        className="flex flex-col gap-2 relative h-full overflow-hidden"
+                      >
+                        <div className={`flex flex-col gap-2 transition-none ${isReelSpinning ? 'animate-reel-spin-v2' : ''}`}>
+                          {/* When spinning, we show a duplicated set for infinite feel */}
+                          {(isReelSpinning ? [...reel, ...reel, ...reel] : reel).map((symbol, symbolIndex) => {
+                            const isWinning = !isReelSpinning && isWinningPosition(reelIndex, symbolIndex % 5)
+                            return (
+                              <div
+                                key={`${reelIndex}-${symbolIndex}`}
+                                className={`aspect-square flex items-center justify-center rounded-xl border-2 transition-all duration-300 relative bg-white border-gray-200 shadow-sm
+                                  ${isWinning ? 'bg-yellow-400 border-yellow-600 scale-110 z-20 shadow-[0_0_25px_rgba(255,215,0,1)]' : ''}
+                                `}
+                                style={{
+                                  minHeight: 'calc(20% - 0.5rem)',
+                                  willChange: 'transform',
+                                  transform: isWinning ? 'scale(1.1) translateZ(0)' : 'translateZ(0)'
+                                }}
+                              >
+                                <div className={`${isWinning ? 'animate-pop' : ''} w-full h-full p-1 flex items-center justify-center`} style={{
+                                  filter: isReelSpinning ? 'blur(4px)' : 'none',
+                                  opacity: isReelSpinning ? 0.7 : 1
+                                }}>
+                                  <img
+                                    src={SYMBOL_ASSETS[symbol] || SYMBOL_ASSETS['apple']}
+                                    alt={symbol}
+                                    className="max-w-full max-h-full object-contain"
+                                  />
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -1348,13 +1353,12 @@ export default function SweetBonanza({ isLauncher = false, gameInfo }) {
           animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
           will-change: transform;
         }
-        @keyframes reel-spin {
-          0% { transform: translateY(-4px) translateZ(0); }
-          50% { transform: translateY(4px) translateZ(0); }
-          100% { transform: translateY(-4px) translateZ(0); }
+        @keyframes reel-spin-v2 {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(-66.66%); }
         }
-        .animate-reel-spin {
-          animation: reel-spin 0.08s linear infinite;
+        .animate-reel-spin-v2 {
+          animation: reel-spin-v2 0.5s linear infinite;
           will-change: transform;
         }
         @keyframes fall {

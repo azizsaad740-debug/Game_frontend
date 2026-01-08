@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       const savedUser = localStorage.getItem('user');
 
-      if (token === 'mock-token' && savedUser) {
+      if (token && token.startsWith('mock') && savedUser) {
         setUser(JSON.parse(savedUser));
         setLoading(false);
         return;

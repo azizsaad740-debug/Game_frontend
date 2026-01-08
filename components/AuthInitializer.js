@@ -17,7 +17,8 @@ export default function AuthInitializer() {
     const loadSession = async () => {
       try {
         // Skip if using mock token
-        if (localStorage.getItem('token') === 'mock-token') return;
+        const token = localStorage.getItem('token');
+        if (token && token.startsWith('mock')) return;
 
         const res = await authAPI.me();
         setUser(res.data);

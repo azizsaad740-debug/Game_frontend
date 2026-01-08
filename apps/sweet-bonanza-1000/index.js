@@ -6,7 +6,8 @@ import { Howl } from 'howler'
 import axios from 'axios'
 import { useTranslation } from '@/hooks/useTranslation'
 import { authAPI, betRoundAPI } from '@/lib/api'
-import { logger } from '@/utils/logger'
+import sweetBonanzaAPI from '@/lib/api/sweetBonanza.api'
+import { logger, log } from '@/utils/logger'
 import { handleError } from '@/utils/errorHandler'
 
 // Pragmatic-style loading screen component
@@ -29,109 +30,234 @@ const PragmaticLoading = ({ progress }) => (
     </div>
 )
 
-// Enhanced Win celebration component with coin sound
+// New Premium Win Screen integration
 const WinCelebration = ({ amount, onCoinSound }) => {
-    const getWinLevel = (amt) => {
-        if (amt >= 1000) return { text: 'MEGA WIN!', color: 'from-yellow-400 via-orange-400 to-red-500', size: 'text-8xl md:text-9xl', coins: 20 }
-        if (amt >= 500) return { text: 'BIG WIN!', color: 'from-pink-400 via-purple-400 to-purple-600', size: 'text-7xl md:text-8xl', coins: 15 }
-        if (amt >= 100) return { text: 'GREAT WIN!', color: 'from-blue-400 via-cyan-400 to-teal-500', size: 'text-6xl md:text-7xl', coins: 12 }
-        return { text: 'WIN!', color: 'from-green-400 via-emerald-400 to-green-600', size: 'text-5xl md:text-6xl', coins: 8 }
-    }
-
-    const level = getWinLevel(amount)
+    const [coins, setCoins] = useState([]);
+    const [show, setShow] = useState(false);
+    const [rays, setRays] = useState([]);
 
     useEffect(() => {
-        // Play coin sound on mount
-        onCoinSound?.()
-    }, [])
+        // Trigger rhythmic coin sounds
+        onCoinSound?.();
+        const soundInterval = setInterval(() => onCoinSound?.(), 300);
+
+        setTimeout(() => setShow(true), 100);
+
+        // Generate rays
+        const newRays = Array.from({ length: 16 }, (_, i) => ({
+            id: i,
+            angle: (360 / 16) * i
+        }));
+        setRays(newRays);
+
+        // Generate coins
+        const coinInterval = setInterval(() => {
+            const batch = Array.from({ length: 3 }, () => ({
+                id: Math.random(),
+                left: Math.random() * 100,
+                delay: Math.random() * 0.3,
+                duration: 2.5 + Math.random() * 1.5,
+                size: 40 + Math.random() * 30,
+                spin: Math.random() > 0.5 ? 'spin' : 'spinReverse'
+            }));
+            setCoins(prev => [...prev, ...batch]);
+        }, 200);
+
+        const cleanupInterval = setInterval(() => {
+            setCoins(prev => prev.slice(-50));
+        }, 4000);
+
+        return () => {
+            clearInterval(soundInterval);
+            clearInterval(coinInterval);
+            clearInterval(cleanupInterval);
+        };
+    }, []);
+
+    const getWinText = (amt) => {
+        if (amt >= 1000) return 'MEGA WIN!';
+        if (amt >= 500) return 'BIG WIN!';
+        if (amt >= 100) return 'GREAT WIN!';
+        return 'WIN!';
+    }
 
     return (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center pointer-events-none">
-            {/* Darker overlay */}
-            <div className="absolute inset-0 bg-black/80 animate-fade-in" />
+        <div className="fixed inset-0 z-[150] flex items-center justify-center overflow-hidden pointer-events-none">
+            {/* Blurred background overlay */}
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-md animate-fade-in"></div>
 
-            {/* Simplified sunburst rays - reduced to 8 */}
-            <div className="absolute inset-0 overflow-hidden">
-                {[...Array(8)].map((_, i) => (
+            {/* Rotating rays */}
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative w-full h-full animate-rotate-slow">
+                    {rays.map(ray => (
+                        <div
+                            key={ray.id}
+                            className="absolute top-1/2 left-1/2 origin-left"
+                            style={{
+                                transform: `rotate(${ray.angle}deg)`,
+                                width: '100%',
+                                height: '8px'
+                            }}
+                        >
+                            <div className="w-full h-full bg-gradient-to-r from-yellow-300/30 to-transparent"></div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Colorful particles */}
+            <div className="absolute inset-0">
+                {[...Array(40)].map((_, i) => (
                     <div
-                        key={`ray-${i}`}
-                        className="absolute top-1/2 left-1/2 w-2 h-[200%] bg-gradient-to-t from-transparent via-yellow-400/15 to-transparent origin-bottom"
+                        key={i}
+                        className="absolute animate-float-random"
                         style={{
-                            transform: `translate(-50%, -50%) rotate(${i * 45}deg)`,
-                            animation: 'spin-slow 20s linear infinite',
-                            animationDelay: `${i * 0.1}s`,
-                            willChange: 'transform'
+                            top: `${Math.random() * 100}%`,
+                            left: `${Math.random() * 100}%`,
+                            animationDelay: `${Math.random() * 3}s`,
+                            animationDuration: `${3 + Math.random() * 4}s`
                         }}
-                    />
+                    >
+                        <div
+                            className="rounded-full blur-sm"
+                            style={{
+                                width: `${8 + Math.random() * 16}px`,
+                                height: `${8 + Math.random() * 16}px`,
+                                backgroundColor: ['#ff6b9d', '#ffd93d', '#6bcf7f', '#a78bfa', '#60a5fa'][Math.floor(Math.random() * 5)],
+                                opacity: 0.6
+                            }}
+                        ></div>
+                    </div>
                 ))}
             </div>
 
-            {/* Main content */}
-            <div className="relative text-center z-10">
-                {/* Glowing background circle */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-radial from-yellow-400/20 via-orange-400/10 to-transparent rounded-full blur-3xl animate-pulse" />
+            {/* Confetti burst */}
+            {show && [...Array(30)].map((_, i) => (
+                <div
+                    key={`confetti-${i}`}
+                    className="absolute top-1/2 left-1/2 w-3 h-8 animate-confetti-burst"
+                    style={{
+                        backgroundColor: ['#ff6b9d', '#ffd93d', '#6bcf7f', '#a78bfa', '#60a5fa', '#f87171'][Math.floor(Math.random() * 6)],
+                        transform: `rotate(${Math.random() * 360}deg)`,
+                        animationDelay: `${Math.random() * 0.3}s`,
+                        '--burst-x': `${(Math.random() - 0.5) * 800}px`,
+                        '--burst-y': `${(Math.random() - 0.5) * 800}px`,
+                        '--rotation': `${Math.random() * 720}deg`
+                    }}
+                ></div>
+            ))}
 
-                <div className="relative animate-bounce-premium">
-                    {/* Win text with enhanced styling */}
-                    <div className={`${level.size} font-black italic text-transparent bg-clip-text bg-gradient-to-r ${level.color} drop-shadow-[0_0_40px_rgba(255,215,0,0.8)] mb-6 animate-glow-text tracking-wider`}
-                        style={{ textShadow: '0 0 80px rgba(255,215,0,0.6), 0 0 120px rgba(255,215,0,0.4)' }}>
-                        {level.text}
-                    </div>
-
-                    {/* Amount with coin icon */}
-                    <div className="flex items-center justify-center gap-4 mb-4">
-                        <span className="text-6xl animate-bounce-coin">🪙</span>
-                        <div className="text-6xl md:text-7xl font-black text-white"
-                            style={{ filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.8))' }}>
-                            ₺ {amount.toLocaleString()}
-                        </div>
-                        <span className="text-6xl animate-bounce-coin" style={{ animationDelay: '0.2s' }}>🪙</span>
+            {/* Falling coins using coin.png */}
+            {coins.map(coin => (
+                <div
+                    key={coin.id}
+                    className="absolute pointer-events-none"
+                    style={{
+                        left: `${coin.left}%`,
+                        top: '-100px',
+                        animation: `fall ${coin.duration}s linear forwards`,
+                        animationDelay: `${coin.delay}s`,
+                        width: `${coin.size}px`,
+                        height: `${coin.size}px`
+                    }}
+                >
+                    <div
+                        className="w-full h-full flex items-center justify-center animate-spin"
+                        style={{ animationDuration: '2s' }}
+                    >
+                        <img src="/games/sweet-bonanza-1000/coin.png" alt="coin" className="w-full h-full object-contain drop-shadow-2xl" />
                     </div>
                 </div>
+            ))}
 
-                {/* Optimized coin rain - reduced particles */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ width: '150vw', height: '150vh', left: '-25vw', top: '-25vh' }}>
-                    {[...Array(level.coins)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="absolute animate-fall-coin"
-                            style={{
-                                left: `${Math.random() * 100}%`,
-                                top: `-${Math.random() * 10}%`,
-                                animationDelay: `${Math.random() * 1}s`,
-                                animationDuration: `${2.5 + Math.random() * 1.5}s`,
-                                fontSize: `${2 + Math.random() * 2}rem`,
-                                opacity: 0.8,
-                                willChange: 'transform'
-                            }}
-                        >
-                            🪙
-                        </div>
-                    ))}
+            {/* Main content - Centered text */}
+            <div className="relative z-20 flex flex-col items-center justify-center text-center px-4">
+                {/* Glow effect behind text */}
+                <div className="absolute inset-0 blur-3xl opacity-60">
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-300 animate-pulse-slow"></div>
                 </div>
 
-                {/* Reduced sparkle effects - 12 instead of 30 */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    {[...Array(12)].map((_, i) => (
-                        <div
-                            key={`sparkle-${i}`}
-                            className="absolute text-yellow-300 animate-sparkle"
+                <h1
+                    className={`relative text-[8rem] md:text-[22rem] font-black mb-4 leading-none transform transition-all duration-700 ${show ? 'scale-100 translate-y-0 opacity-100' : 'scale-150 -translate-y-10 opacity-0'}`}
+                    style={{
+                        fontFamily: "'Pacifico', 'Permanent Marker', cursive",
+                        background: 'linear-gradient(180deg, #FFD700 0%, #FFA500 50%, #FF6B00 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                        filter: 'drop-shadow(8px 8px 0px rgba(0, 0, 0, 0.9)) drop-shadow(-4px -4px 0px rgba(255, 255, 255, 0.6)) drop-shadow(0 0 40px rgba(255, 215, 0, 1))',
+                        letterSpacing: '0.02em',
+                        animation: 'float-text 3s ease-in-out infinite'
+                    }}
+                >
+                    {getWinText(amount)}
+                </h1>
+
+                {/* Win amount */}
+                <div className={`relative transform transition-all duration-700 delay-300 ${show ? 'scale-100 opacity-100' : 'scale-75 opacity-0'}`}>
+                    <div className="flex items-center justify-center gap-4 md:gap-8">
+                        <img src="/games/sweet-bonanza-1000/coin.png" className="w-16 h-16 md:w-32 md:h-32 animate-bounce-coin" />
+                        <span
+                            className="text-7xl md:text-[10rem] font-black animate-pulse-gold leading-none"
                             style={{
-                                left: `${20 + Math.random() * 60}%`,
-                                top: `${20 + Math.random() * 60}%`,
-                                animationDelay: `${Math.random() * 2}s`,
-                                fontSize: `${0.5 + Math.random() * 1}rem`,
-                                willChange: 'transform, opacity'
+                                fontFamily: "'Fredoka One', 'Arial Black', sans-serif",
+                                background: 'linear-gradient(180deg, #FFE55C 0%, #FFD700 30%, #FFA500 70%, #FF8C00 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                backgroundClip: 'text',
+                                filter: 'drop-shadow(6px 6px 0px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 40px rgba(255, 215, 0, 1))',
+                                letterSpacing: '0.05em'
                             }}
                         >
-                            ✨
-                        </div>
-                    ))}
+                            ₺ {amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                        </span>
+                        <img src="/games/sweet-bonanza-1000/coin.png" className="w-16 h-16 md:w-32 md:h-32 animate-bounce-coin" style={{ animationDelay: '0.2s' }} />
+                    </div>
                 </div>
             </div>
+
+            <style jsx>{`
+                @import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Permanent+Marker&family=Fredoka+One&display=swap');
+
+                @keyframes rotate-slow {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+
+                @keyframes float-random {
+                    0%, 100% { transform: translate(0, 0); opacity: 0.6; }
+                    50% { transform: translate(20px, -30px); opacity: 1; }
+                }
+
+                @keyframes confetti-burst {
+                    0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+                    100% { transform: translate(var(--burst-x, 100px), var(--burst-y, -100px)) rotate(var(--rotation, 360deg)); opacity: 0; }
+                }
+
+                @keyframes pulse-slow {
+                    0%, 100% { opacity: 0.4; transform: scale(1); }
+                    50% { opacity: 0.7; transform: scale(1.1); }
+                }
+
+                @keyframes pulse-gold {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.05); }
+                }
+
+                @keyframes float-text {
+                    0%, 100% { transform: translateY(0px) rotate(-1deg); }
+                    50% { transform: translateY(-20px) rotate(1deg); }
+                }
+
+                .animate-rotate-slow { animation: rotate-slow 20s linear infinite; }
+                .animate-float-random { animation: float-random 2s ease-in-out infinite; }
+                .animate-confetti-burst { animation: confetti-burst 2s ease-out forwards; }
+                .animate-pulse-slow { animation: pulse-slow 3s ease-in-out infinite; }
+                .animate-pulse-gold { animation: pulse-gold 1s ease-in-out infinite; }
+            `}</style>
         </div>
-    )
-}
+    );
+};
 
 export default function SweetBonanza1000() {
     const router = useRouter()
@@ -148,6 +274,10 @@ export default function SweetBonanza1000() {
     const [winningSymbols, setWinningSymbols] = useState([])
     const [droppingIndices, setDroppingIndices] = useState([])
     const [lastWinColor, setLastWinColor] = useState('#fbbf24')
+    const [reelSpeeds, setReelSpeeds] = useState([0, 0, 0, 0, 0, 0])
+    const reelSpeedsRef = useRef([0, 0, 0, 0, 0, 0])
+    const [waitingForAdmin, setWaitingForAdmin] = useState(false)
+    const [user, setUser] = useState(null)
 
     // Free spins state
     const [isFreeSpins, setIsFreeSpins] = useState(false)
@@ -183,7 +313,23 @@ export default function SweetBonanza1000() {
         setGrid(initialGrid)
     }, [])
 
-    // Loading simulation
+    // Unified user data fetching and loading simulation
+    const fetchUserData = async () => {
+        try {
+            const response = await authAPI.me()
+            const userData = response?.data || response || null
+            if (userData) {
+                setUser(userData)
+                const userBalance = userData.balance !== undefined ? userData.balance :
+                    (userData.user?.balance !== undefined ? userData.user.balance : 0)
+                setBalance(userBalance)
+                try { localStorage.setItem('user', JSON.stringify(userData)) } catch (e) { }
+            }
+        } catch (err) {
+            console.error('Error fetching user data:', err)
+        }
+    }
+
     useEffect(() => {
         let progress = 0
         const interval = setInterval(() => {
@@ -195,21 +341,18 @@ export default function SweetBonanza1000() {
             }
             setLoadingProgress(Math.floor(progress))
         }, 100)
-        return () => clearInterval(interval)
-    }, [])
 
-    // Simple responsive detection
-    useEffect(() => {
-        const handleResize = () => {
-            const width = window.innerWidth
-            setIsDesktop(width >= 1024)
-        }
+        const handleResize = () => setIsDesktop(window.innerWidth >= 1024)
         handleResize()
         window.addEventListener('resize', handleResize)
-        window.addEventListener('orientationchange', handleResize)
+
+        fetchUserData()
+        const balanceInterval = setInterval(fetchUserData, 5000)
+
         return () => {
+            clearInterval(interval)
+            clearInterval(balanceInterval)
             window.removeEventListener('resize', handleResize)
-            window.removeEventListener('orientationchange', handleResize)
         }
     }, [])
 
@@ -221,23 +364,40 @@ export default function SweetBonanza1000() {
     useEffect(() => {
         try {
             bgmRef.current = new Howl({
-                src: ['/games/sweet-bonanza-1000/sounds/bgm.mp3'],
+                src: ['https://assets.mixkit.co/music/preview/mixkit-sweet-and-happy-1122.mp3'],
                 loop: true,
-                volume: 0.3,
-                html5: true
+                volume: 0.2,
+                html5: true, // Keep true for long BGM
+                onloaderror: (id, err) => console.error('BGM Load Error:', err),
+                onplayerror: (id, err) => {
+                    console.error('BGM Play Error:', err);
+                    bgmRef.current?.once('unlock', () => bgmRef.current?.play());
+                }
             })
-            // Auto-play BGM (user interaction may be required)
-            const playBGM = () => {
-                bgmRef.current?.play()
-                document.removeEventListener('click', playBGM)
+
+            const unlockAudio = () => {
+                if (bgmRef.current && bgmRef.current.state() === 'loaded') {
+                    bgmRef.current.play();
+                }
+                // Explicitly resume AudioContext for Howler
+                if (window.Howler && window.Howler.ctx && window.Howler.ctx.state === 'suspended') {
+                    window.Howler.ctx.resume();
+                }
+                document.removeEventListener('click', unlockAudio);
+                document.removeEventListener('touchstart', unlockAudio);
             }
-            document.addEventListener('click', playBGM)
+
+            document.addEventListener('click', unlockAudio);
+            document.addEventListener('touchstart', unlockAudio);
+
             return () => {
-                bgmRef.current?.stop()
-                document.removeEventListener('click', playBGM)
+                bgmRef.current?.stop();
+                bgmRef.current?.unload();
+                document.removeEventListener('click', unlockAudio);
+                document.removeEventListener('touchstart', unlockAudio);
             }
         } catch (error) {
-            console.error('BGM error:', error)
+            console.error('BGM initialization error:', error)
         }
     }, [])
 
@@ -245,24 +405,30 @@ export default function SweetBonanza1000() {
         try {
             if (!sounds.current[soundName]) {
                 const soundPaths = {
-                    spin: '/games/sweet-bonanza-1000/sounds/spin.mp3',
-                    win: '/games/sweet-bonanza-1000/sounds/win.mp3',
-                    bigwin: '/games/sweet-bonanza-1000/sounds/bigwin.mp3',
-                    coin: '/games/sweet-bonanza-1000/sounds/coin.mp3',
-                    click: '/games/sweet-bonanza-1000/sounds/click.mp3',
-                    scatter: '/games/sweet-bonanza-1000/sounds/scatter.mp3'
+                    spin: 'https://assets.mixkit.co/sfx/preview/mixkit-retro-game-notification-212.mp3',
+                    win: 'https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3',
+                    bigwin: 'https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-complete-or-victory-notification-205.mp3',
+                    coin: 'https://assets.mixkit.co/sfx/preview/mixkit-light-impact-with-metallic-ring-2144.mp3',
+                    click: 'https://assets.mixkit.co/sfx/preview/mixkit-selection-click-1109.mp3',
+                    scatter: 'https://assets.mixkit.co/sfx/preview/mixkit-magic-marimba-notif-2234.mp3'
                 }
                 if (soundPaths[soundName]) {
                     sounds.current[soundName] = new Howl({
                         src: [soundPaths[soundName]],
                         volume: 0.5,
-                        html5: true
+                        html5: false, // Use Web Audio for SFX (more reliable after unlock)
+                        preload: true
                     })
                 }
             }
-            sounds.current[soundName]?.play()
+            // Resume context if suspended
+            if (window.Howler && window.Howler.ctx && window.Howler.ctx.state === 'suspended') {
+                window.Howler.ctx.resume();
+            }
+            sounds.current[soundName]?.stop();
+            sounds.current[soundName]?.play();
         } catch (error) {
-            console.error('Sound error:', error)
+            console.error('Sound play error:', error)
         }
     }
 
@@ -273,80 +439,151 @@ export default function SweetBonanza1000() {
         setWinningSymbols([])
         setShowFireworks(false)
         setShowLossAnimation(false)
+        setWaitingForAdmin(false)
         playSound('spin')
 
         // Deduct bet
         setBalance(prev => prev - betAmount)
 
-        // Simulate spin with dropping animation (6×5 grid = 30 symbols)
-        const newGrid = Array(30).fill(null).map(() => symbols[Math.floor(Math.random() * symbols.length)])
+        // Reset and start all reels spinning
+        reelSpeedsRef.current = [1, 1, 1, 1, 1, 1]
+        setReelSpeeds([...reelSpeedsRef.current])
 
-        // Animate symbols dropping
-        for (let i = 0; i < 30; i++) {
+        try {
+            let gameData;
+            const isMock = localStorage.getItem('token')?.startsWith('mock');
+
+            if (isMock) {
+                setWaitingForAdmin(true)
+                // --- REAL-TIME MOCK WAITING FOR ADMIN ---
+                localStorage.setItem('mock-spin-request', JSON.stringify({
+                    _id: 'mock-spin-' + Date.now(),
+                    username: user?.username || 'MockUser',
+                    betAmount: betAmount,
+                    gameType: 'sweet-bonanza',
+                    createdAt: new Date().toISOString()
+                }))
+
+                localStorage.removeItem('mock-game-decision')
+
+                let decision = null
+                const pollStartTime = Date.now()
+                // Poll for up to 25 seconds
+                while (!decision && Date.now() - pollStartTime < 25000) {
+                    await new Promise(resolve => setTimeout(resolve, 500))
+                    decision = localStorage.getItem('mock-game-decision')
+                }
+
+                localStorage.removeItem('mock-game-decision')
+                localStorage.removeItem('mock-spin-request')
+                setWaitingForAdmin(false)
+
+                // Generate result based on decision
+                const resultSymbols = ['heart', 'apple', 'banana', 'grapes', 'plum', 'watermelon', 'oval', 'pentagon', 'square'];
+                let finalWinningIndices = []
+                let localWinAmount = 0
+
+                // 2D Reels [6 columns][5 rows]
+                let finalReels = Array(6).fill(null).map(() => Array(5).fill(null).map(() => symbols[Math.floor(Math.random() * (symbols.length - 1))].id))
+
+                if (decision === 'win') {
+                    localWinAmount = betAmount * (Math.floor(Math.random() * 8) + 3)
+                    const winSymbolId = resultSymbols[Math.floor(Math.random() * 7)] // Avoid scatter for simplicity in mock win
+                    const winCount = Math.floor(Math.random() * 5) + 8;
+                    for (let i = 0; i < winCount; i++) {
+                        const r = Math.floor(Math.random() * 6);
+                        const s = Math.floor(Math.random() * 5);
+                        finalReels[r][s] = winSymbolId;
+                    }
+                }
+
+                gameData = {
+                    reels: finalReels,
+                    winAmount: localWinAmount
+                }
+            } else {
+                // Real API Call
+                setWaitingForAdmin(true)
+                const response = await sweetBonanzaAPI.playGame(betAmount);
+                gameData = response.data?.data || response.data;
+                setWaitingForAdmin(false)
+            }
+
+            // Sync symbols from API result (strings) back to symbol objects
+            const apiReels = gameData.reels; // Expecting [6][5]
+            const finalFlatGrid = Array(30).fill(null);
+
+            // Map 2D API reels back to flat grid Row-major (as SB1000 renders)
+            // API: reels[col][row] -> Grid: grid[row*6 + col]
+            for (let c = 0; c < 6; c++) {
+                for (let r = 0; r < 5; r++) {
+                    const symId = apiReels[c][r];
+                    finalFlatGrid[r * 6 + c] = symbols.find(s => s.id === symId) || symbols[0];
+                }
+            }
+
+            // --- STAGGERED STOP ANIMATION (Fast to Slow feel) ---
+            for (let i = 0; i < 6; i++) {
+                // Small delay between reel stops for "fast to slow" sequential stopping
+                await new Promise(resolve => setTimeout(resolve, 400 + i * 100));
+
+                reelSpeedsRef.current[i] = 0;
+                setReelSpeeds([...reelSpeedsRef.current]);
+
+                // Update only this reel's symbols in the main grid
+                setGrid(prev => {
+                    const next = [...prev];
+                    for (let r = 0; r < 5; r++) {
+                        next[r * 6 + i] = finalFlatGrid[r * 6 + i];
+                    }
+                    return next;
+                });
+            }
+
             setTimeout(() => {
-                setDroppingIndices(prev => [...prev, i])
-            }, i * 30)
-        }
+                setIsSpinning(false);
+                setWinAmount(gameData.winAmount);
+                if (gameData.winAmount > 0) {
+                    setBalance(prev => prev + gameData.winAmount);
+                    checkWinAfterStop(gameData, finalFlatGrid);
+                } else {
+                    setShowLossAnimation(true);
+                    setTimeout(() => setShowLossAnimation(false), 2000);
+                }
+            }, 500);
 
-        setTimeout(() => {
-            setGrid(newGrid)
-            setDroppingIndices([])
-            checkWin(newGrid)
-        }, turboSpin ? 800 : 1500)
+        } catch (error) {
+            console.error('Spin error:', error);
+            setIsSpinning(false);
+            setReelSpeeds([0, 0, 0, 0, 0, 0]);
+            reelSpeedsRef.current = [0, 0, 0, 0, 0, 0];
+        }
     }
 
-    const checkWin = (currentGrid) => {
+    const checkWinAfterStop = (gameData, finalGrid) => {
+        // Calculate which items to highlight based on counts >= 8
         const symbolCounts = {}
-        currentGrid.forEach((symbol, idx) => {
+        finalGrid.forEach((symbol, idx) => {
             if (symbol) {
                 if (!symbolCounts[symbol.id]) symbolCounts[symbol.id] = []
                 symbolCounts[symbol.id].push(idx)
             }
         })
 
-        let totalWin = 0
         let winIndices = []
-        let scatterCount = symbolCounts['scatter']?.length || 0
-
         Object.entries(symbolCounts).forEach(([symbolId, indices]) => {
             if (indices.length >= 8 && symbolId !== 'scatter') {
-                const symbol = symbols.find(s => s.id === symbolId)
-                totalWin += betAmount * symbol.multiplier * indices.length
                 winIndices.push(...indices)
             }
         })
 
-        if (totalWin > 0) {
-            setWinAmount(totalWin)
-            setBalance(prev => prev + totalWin)
+        if (winIndices.length > 0 || gameData.winAmount > 0) {
             setWinningSymbols(winIndices)
-            setLastWinColor(totalWin >= 500 ? '#f59e0b' : '#10b981')
-
-            setTimeout(() => {
-                setShowFireworks(true)
-                playSound(totalWin >= 500 ? 'bigwin' : 'win')
-                playSound('coin')
-            }, 500)
-
-            setTimeout(() => {
-                setShowFireworks(false)
-                setWinningSymbols([])
-            }, 3000)
-        } else {
-            setTimeout(() => {
-                setShowLossAnimation(true)
-                setTimeout(() => setShowLossAnimation(false), 2000)
-            }, 500)
+            setLastWinColor(gameData.winAmount >= betAmount * 5 ? '#f59e0b' : '#10b981')
+            setShowFireworks(true)
+            playSound(gameData.winAmount >= betAmount * 5 ? 'bigwin' : 'win')
+            setTimeout(() => setShowFireworks(false), 3000)
         }
-
-        // Check for free spins trigger
-        if (scatterCount >= 4 && !isFreeSpins) {
-            playSound('scatter')
-            setIsFreeSpins(true)
-            setFreeSpinsRemaining(10)
-        }
-
-        setIsSpinning(false)
     }
 
     const handleBuyFreeSpins = (type) => {
@@ -433,16 +670,42 @@ export default function SweetBonanza1000() {
 
                         {/* Center: Game Grid - Responsive Size (final optimization) */}
                         <div className="flex flex-col items-center w-full md:scale-[0.68] lg:scale-x-[0.76] lg:scale-y-[0.66]">
-                            <div className="relative bg-blue-400/20 backdrop-blur-xl rounded-2xl md:rounded-3xl p-4 sm:p-6 md:p-8 lg:p-10 border-2 md:border-4 lg:border-6 border-white/30 shadow-2xl ring-1 ring-blue-400/50 animate-neon-pulsate">
-                                <div className="grid grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-5 bg-black/70 rounded-xl md:rounded-2xl p-4 sm:p-6 md:p-8 lg:p-12 shadow-inner border border-white/10">
-                                    {grid.map((symbol, idx) => (
-                                        <div key={idx} className={`relative w-14 h-14 xs:w-16 xs:h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 xl:w-32 xl:h-32 flex items-center justify-center transition-all duration-500 ${droppingIndices.includes(idx) ? 'animate-drop-in' : ''} ${winningSymbols.includes(idx) ? 'animate-match-pop z-20' : ''}`}>
-                                            {symbol && (
-                                                <div className="w-full h-full flex items-center justify-center">
-                                                    <img src={symbol.image} alt={symbol.id} className={`w-[95%] h-[95%] object-contain drop-shadow-lg ${winningSymbols.includes(idx) ? 'animate-glow-pulse scale-110' : ''}`} />
-                                                    {winningSymbols.includes(idx) && <div className="absolute inset-0 rounded-full animate-ping pointer-events-none opacity-40" style={{ backgroundColor: lastWinColor, boxShadow: `0 0 40px ${lastWinColor}` }} />}
-                                                </div>
-                                            )}
+                            <div className="relative bg-blue-400/20 backdrop-blur-xl rounded-2xl md:rounded-3xl p-1 sm:p-1 md:p-2 lg:p-2 border-[0.5px] md:border-[1px] lg:border-[1.2px] border-white/30 shadow-2xl ring-1 ring-blue-400/50 animate-neon-pulsate">
+                                {/* Admin Waiting Overlay */}
+                                {(waitingForAdmin || (isSpinning && reelSpeeds[0] > 0 && !grid[0]?.image)) && (
+                                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-2xl md:rounded-3xl pointer-events-none">
+                                        <div className="bg-black/80 p-4 md:p-8 rounded-3xl border-2 border-yellow-400/50 animate-pulse shadow-[0_0_50px_rgba(255,215,0,0.3)]">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <span className="text-yellow-400 font-black text-xl md:text-3xl italic tracking-widest text-center">HOLD TIGHT!</span>
+                                                <span className="text-white font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] text-center opacity-80">Fruits and Candies are being ready for you... 🍭</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-5 bg-black/70 rounded-xl md:rounded-2xl p-1 sm:p-1 md:p-2 lg:p-2 shadow-inner border border-white/10 overflow-hidden aspect-[6/5] w-fit">
+                                    {[0, 1, 2, 3, 4, 5].map(colIdx => (
+                                        <div key={colIdx} className="h-full relative overflow-hidden">
+                                            <div className={`flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-5 ${reelSpeeds[colIdx] > 0 ? 'animate-reel-scroll' : ''}`}>
+                                                {/* In spinning mode, we show duplicated sets for infinite loop feel */}
+                                                {(reelSpeeds[colIdx] > 0 ?
+                                                    [...Array(3)].flatMap(() => [0, 1, 2, 3, 4].map(r => grid[r * 6 + colIdx])) :
+                                                    [0, 1, 2, 3, 4].map(r => grid[r * 6 + colIdx])
+                                                ).map((symbol, rowIdx) => {
+                                                    const actualIdx = (rowIdx % 5) * 6 + colIdx
+                                                    const isWinning = winningSymbols.includes(actualIdx) && reelSpeeds[colIdx] === 0
+                                                    return (
+                                                        <div key={rowIdx} className={`relative w-14 h-14 xs:w-16 xs:h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 xl:w-32 xl:h-32 flex items-center justify-center transition-all duration-500 ${isWinning ? 'animate-match-pop z-20' : ''}`}>
+                                                            {symbol && (
+                                                                <div className="w-full h-full flex items-center justify-center">
+                                                                    <img src={symbol.image} alt={symbol.id} className={`w-[95%] h-[95%] object-contain drop-shadow-lg ${isWinning ? 'animate-glow-pulse scale-110' : ''}`} />
+                                                                    {isWinning && <div className="absolute inset-0 rounded-full animate-ping pointer-events-none opacity-40" style={{ backgroundColor: lastWinColor, boxShadow: `0 0 40px ${lastWinColor}` }} />}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -568,6 +831,15 @@ export default function SweetBonanza1000() {
             {showFireworks && <WinCelebration amount={winAmount} onCoinSound={() => playSound('coin')} />}
 
             <style jsx>{`
+                @keyframes reel-scroll {
+                    0% { transform: translateY(0); }
+                    100% { transform: translateY(-33.33%); }
+                }
+                .animate-reel-scroll { 
+                    animation: reel-scroll 0.5s linear infinite; 
+                    will-change: transform;
+                }
+                
                 @keyframes drop-in {
                     0% { transform: translateY(-500%) scale(0.8); opacity: 0; }
                     80% { transform: translateY(5%) scale(1.02); opacity: 1; }
@@ -612,41 +884,12 @@ export default function SweetBonanza1000() {
                     50% { transform: translateY(-30px) scale(1.05); }
                 }
                 .animate-bounce-premium { animation: bounce-premium 2s ease-in-out infinite; }
-                
-                @keyframes fall {
-                    to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-                }
-                .animate-fall { animation: fall linear forwards; }
-                
-                @keyframes fall-coin {
-                    0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
-                    100% { transform: translateY(100vh) rotate(720deg) scale(0.5); opacity: 0; }
-                }
-                .animate-fall-coin { animation: fall-coin linear forwards; }
-                
+
                 @keyframes bounce-coin {
-                    0%, 100% { transform: translateY(0) scale(1); }
-                    50% { transform: translateY(-20px) scale(1.2); }
+                    0%, 100% { transform: translateY(0) rotate(0); }
+                    50% { transform: translateY(-20px) rotate(10deg); }
                 }
                 .animate-bounce-coin { animation: bounce-coin 1s ease-in-out infinite; }
-                
-                @keyframes scale-pulse {
-                    0%, 100% { transform: scale(1); }
-                    50% { transform: scale(1.1); }
-                }
-                .animate-scale-pulse { animation: scale-pulse 2s ease-in-out infinite; }
-                
-                @keyframes glow-text {
-                    0%, 100% { filter: brightness(1) drop-shadow(0 0 20px currentColor); }
-                    50% { filter: brightness(1.5) drop-shadow(0 0 40px currentColor); }
-                }
-                .animate-glow-text { animation: glow-text 1.5s ease-in-out infinite; }
-                
-                @keyframes sparkle {
-                    0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
-                    50% { opacity: 1; transform: scale(1) rotate(180deg); }
-                }
-                .animate-sparkle { animation: sparkle 2s ease-in-out infinite; }
             `}</style>
         </div>
     )

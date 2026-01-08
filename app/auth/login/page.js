@@ -263,37 +263,34 @@ export default function LoginPage() {
     }
   }
 
-  const handleQuickLogin = async () => {
-    setError('')
-    setLoading(true)
-    const testEmail = 'test@example.com'
-    const testPassword = 'test123456'
+  const handleMockAdminLogin = () => {
+    const mockAdmin = {
+      _id: 'mock-admin-id',
+      username: 'QuickAdmin',
+      email: 'admin@test.com',
+      role: 'admin',
+      balance: 1000000.00
+    };
+    localStorage.setItem('token', 'mock-jwt-token-admin');
+    localStorage.setItem('user', JSON.stringify(mockAdmin));
+    localStorage.setItem('isAdmin', 'true');
+    localStorage.setItem('adminEmail', mockAdmin.email);
+    window.location.href = '/admin';
+  };
 
-    setEmail(testEmail)
-    setPassword(testPassword)
-
-    try {
-      const response = await authAPI.login(testEmail, testPassword)
-      const { token, user, redirectPath } = response.data || {}
-
-      if (!user || !token) {
-        throw new Error('Login succeeded but no user or token payload was returned')
-      }
-
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(user))
-
-      const isAdminUser = adminRoles.includes(user.role)
-      localStorage.setItem('isAdmin', isAdminUser ? 'true' : 'false')
-
-      window.location.href = redirectPath || (isAdminUser ? '/admin' : '/dashboard')
-    } catch (err) {
-      const errorDetails = handleApiError(err, t('errors.loginFailed'))
-      setError(errorDetails.message)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const handleMockUserLogin = () => {
+    const mockUser = {
+      _id: 'mock-user-id',
+      username: 'TestPlayer',
+      email: 'player@test.com',
+      role: 'user',
+      balance: 5000.00
+    };
+    localStorage.setItem('token', 'mock-jwt-token-user');
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    localStorage.setItem('isAdmin', 'false');
+    window.location.href = '/dashboard';
+  };
 
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-center bg-[#121212] bg-[url('https://images.unsplash.com/photo-1542744095-291d1f67b221?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat p-4 md:p-6 lg:p-8">
@@ -316,11 +313,6 @@ export default function LoginPage() {
             {error && (
               <div className="mb-4 rounded-lg bg-red-500/20 border border-red-500/50 p-3">
                 <p className="text-sm text-red-400 font-medium">{error}</p>
-                {process.env.NODE_ENV === 'development' && (
-                  <p className="text-xs text-red-300/70 mt-1">
-                    API URL: {process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}
-                  </p>
-                )}
               </div>
             )}
 
@@ -338,7 +330,6 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={loading}
-                  aria-required="true"
                 />
               </div>
 
@@ -356,14 +347,11 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading}
-                    aria-required="true"
                   />
                   <button
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className="absolute right-3 flex items-center justify-center text-gray-400 transition-colors hover:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 rounded"
+                    className="absolute right-3 flex items-center justify-center text-gray-400 transition-colors hover:text-white"
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={0}
                   >
                     <span className="material-symbols-outlined text-xl">
                       {showPassword ? 'visibility_off' : 'visibility'}
@@ -374,7 +362,7 @@ export default function LoginPage() {
 
               <div className="text-right">
                 <Link
-                  className="text-sm font-medium text-[#4D96FF] hover:text-primary hover:underline transition-colors"
+                  className="text-sm font-medium text-[#4D96FF] hover:text-primary transition-colors"
                   href="/auth/forgot-password"
                 >
                   {t('login.forgotPassword')}
@@ -382,33 +370,31 @@ export default function LoginPage() {
               </div>
 
               <button
-                className="mt-2 flex h-12 w-full items-center justify-center rounded-lg bg-primary text-center text-sm font-bold text-black transition-all hover:brightness-110 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[#1E1E1E] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="mt-2 flex h-12 w-full items-center justify-center rounded-lg bg-primary text-center text-sm font-bold text-black transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
                 type="submit"
                 disabled={loading}
               >
                 {loading ? 'Logging in...' : t('common.login')}
               </button>
 
-              <button
-                className="flex h-12 w-full items-center justify-center rounded-lg border border-[#10b981]/30 bg-[#10b981]/10 text-center text-sm font-bold text-[#10b981] transition-all hover:bg-[#10b981]/20 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#10b981]/50"
-                type="button"
-                onClick={() => {
-                  const mockUser = {
-                    id: 'mock-user-id',
-                    username: 'TestPlayer',
-                    email: 'testplayer@example.com',
-                    role: 'user',
-                    balance: 10000.00
-                  };
-                  localStorage.setItem('token', 'mock-token');
-                  localStorage.setItem('user', JSON.stringify(mockUser));
-                  localStorage.setItem('isAdmin', 'false');
-                  window.location.href = '/dashboard';
-                }}
-              >
-                <span className="material-symbols-outlined mr-2 text-lg">rocket_launch</span>
-                Test Login (No API Required)
-              </button>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  className="flex h-12 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-center text-xs font-bold text-primary transition-all hover:bg-primary/20 active:scale-[0.98]"
+                  type="button"
+                  onClick={handleMockAdminLogin}
+                >
+                  <span className="material-symbols-outlined mr-2 text-lg">admin_panel_settings</span>
+                  Quick Admin
+                </button>
+                <button
+                  className="flex h-12 items-center justify-center rounded-lg border border-teal-500/30 bg-teal-500/10 text-center text-xs font-bold text-teal-400 transition-all hover:bg-teal-500/20 active:scale-[0.98]"
+                  type="button"
+                  onClick={handleMockUserLogin}
+                >
+                  <span className="material-symbols-outlined mr-2 text-lg">person</span>
+                  Quick User
+                </button>
+              </div>
             </form>
 
             <div className="mt-6 text-center">

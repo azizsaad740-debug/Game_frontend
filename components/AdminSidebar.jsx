@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslation } from '@/hooks/useTranslation'
+import GameControlMonitor from '@/components/GameControlMonitor'
 
 export default function AdminSidebar() {
   const { t } = useTranslation()
@@ -62,73 +63,72 @@ export default function AdminSidebar() {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed left-0 top-0 h-screen w-64 flex flex-col bg-background-dark border-r border-surface p-4 z-[95] transition-transform duration-300 ease-in-out ${
-        isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      }`}>
-      <div className="flex items-center justify-between mb-8 px-2 min-w-0">
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary flex-shrink-0">
-          <span className="material-symbols-outlined text-black">casino</span>
-        </div>
-          <div className="flex flex-col min-w-0 flex-1">
-            <h1 className="text-base font-bold text-white truncate">{t('admin.title')}</h1>
-            <p className="text-sm text-gray-400 truncate">{t('admin.management')}</p>
+      <aside className={`fixed left-0 top-0 h-screen w-64 flex flex-col bg-background-dark border-r border-surface p-4 z-[95] transition-transform duration-300 ease-in-out ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}>
+        <div className="flex items-center justify-between mb-8 px-2 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary flex-shrink-0">
+              <span className="material-symbols-outlined text-black">casino</span>
+            </div>
+            <div className="flex flex-col min-w-0 flex-1">
+              <h1 className="text-base font-bold text-white truncate">{t('admin.title')}</h1>
+              <p className="text-sm text-gray-400 truncate">{t('admin.management')}</p>
+            </div>
           </div>
-        </div>
-        {/* Close button for mobile */}
-        <button
-          onClick={() => setIsMobileOpen(false)}
-          className="lg:hidden p-1 text-gray-400 hover:text-white transition-colors"
-          aria-label="Close sidebar"
-        >
-          <span className="material-symbols-outlined text-xl">close</span>
-        </button>
-      </div>
-
-      <nav className="flex flex-col gap-2">
-        {navItems.map(item => (
-          <Link
-            key={item.id}
-            href={item.href}
+          {/* Close button for mobile */}
+          <button
             onClick={() => setIsMobileOpen(false)}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors min-w-0 ${
-              pathname === item.href || (item.id === 'dashboard' && pathname === '/admin') || pathname.startsWith(item.href + '/')
+            className="lg:hidden p-1 text-gray-400 hover:text-white transition-colors"
+            aria-label="Close sidebar"
+          >
+            <span className="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+
+        <nav className="flex flex-col gap-2">
+          {navItems.map(item => (
+            <Link
+              key={item.id}
+              href={item.href}
+              onClick={() => setIsMobileOpen(false)}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors min-w-0 ${pathname === item.href || (item.id === 'dashboard' && pathname === '/admin') || pathname.startsWith(item.href + '/')
                 ? 'bg-primary/20 text-primary'
                 : 'text-gray-300 hover:bg-white/10'
-            }`}
+                }`}
+            >
+              <span className="material-symbols-outlined flex-shrink-0 text-xl">{item.icon}</span>
+              <p className="truncate whitespace-nowrap flex-1 min-w-0">{item.label}</p>
+            </Link>
+          ))}
+        </nav>
+
+        <div className="mt-auto">
+          <Link
+            href="/admin/settings"
+            onClick={() => setIsMobileOpen(false)}
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10 transition-colors min-w-0"
           >
-            <span className="material-symbols-outlined flex-shrink-0 text-xl">{item.icon}</span>
-            <p className="truncate whitespace-nowrap flex-1 min-w-0">{item.label}</p>
+            <span className="material-symbols-outlined flex-shrink-0 text-xl">settings</span>
+            <p className="text-sm font-medium truncate whitespace-nowrap flex-1 min-w-0">{t('admin.settings')}</p>
           </Link>
-        ))}
-      </nav>
 
-      <div className="mt-auto">
-        <Link
-          href="/admin/settings"
-          onClick={() => setIsMobileOpen(false)}
-          className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10 transition-colors min-w-0"
-        >
-          <span className="material-symbols-outlined flex-shrink-0 text-xl">settings</span>
-          <p className="text-sm font-medium truncate whitespace-nowrap flex-1 min-w-0">{t('admin.settings')}</p>
-        </Link>
+          <button
+            onClick={() => {
+              localStorage.removeItem('token')
+              localStorage.removeItem('user')
+              localStorage.removeItem('isAdmin')
+              localStorage.removeItem('adminEmail')
+              window.location.href = '/auth/login'
+            }}
+            className="mt-2 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-red-500/20 hover:text-red-400 transition-colors min-w-0"
+          >
+            <span className="material-symbols-outlined flex-shrink-0 text-xl">logout</span>
+            <p className="text-sm font-medium truncate whitespace-nowrap flex-1 min-w-0">{t('admin.logout')}</p>
+          </button>
+        </div>
+      </aside>
 
-        <button
-          onClick={() => {
-            localStorage.removeItem('token')
-            localStorage.removeItem('user')
-            localStorage.removeItem('isAdmin')
-            localStorage.removeItem('adminEmail')
-            window.location.href = '/auth/login'
-          }}
-          className="mt-2 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-red-500/20 hover:text-red-400 transition-colors min-w-0"
-        >
-          <span className="material-symbols-outlined flex-shrink-0 text-xl">logout</span>
-          <p className="text-sm font-medium truncate whitespace-nowrap flex-1 min-w-0">{t('admin.logout')}</p>
-        </button>
-      </div>
-    </aside>
+      <GameControlMonitor />
     </>
   )
 }
-
