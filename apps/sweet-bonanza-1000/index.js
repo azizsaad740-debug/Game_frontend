@@ -31,16 +31,12 @@ const PragmaticLoading = ({ progress }) => (
 )
 
 // New Premium Win Screen integration
-const WinCelebration = ({ amount, onCoinSound }) => {
+const WinCelebration = ({ amount }) => {
     const [coins, setCoins] = useState([]);
     const [show, setShow] = useState(false);
     const [rays, setRays] = useState([]);
 
     useEffect(() => {
-        // Trigger rhythmic coin sounds
-        onCoinSound?.();
-        const soundInterval = setInterval(() => onCoinSound?.(), 300);
-
         setTimeout(() => setShow(true), 100);
 
         // Generate rays
@@ -68,7 +64,6 @@ const WinCelebration = ({ amount, onCoinSound }) => {
         }, 4000);
 
         return () => {
-            clearInterval(soundInterval);
             clearInterval(coinInterval);
             clearInterval(cleanupInterval);
         };
@@ -356,82 +351,6 @@ export default function SweetBonanza1000() {
         }
     }, [])
 
-    // Sound objects
-    const sounds = useRef({})
-    const bgmRef = useRef(null)
-
-    // Initialize BGM
-    useEffect(() => {
-        try {
-            bgmRef.current = new Howl({
-                src: ['https://assets.mixkit.co/music/preview/mixkit-sweet-and-happy-1122.mp3'],
-                loop: true,
-                volume: 0.2,
-                html5: true, // Keep true for long BGM
-                onloaderror: (id, err) => console.error('BGM Load Error:', err),
-                onplayerror: (id, err) => {
-                    console.error('BGM Play Error:', err);
-                    bgmRef.current?.once('unlock', () => bgmRef.current?.play());
-                }
-            })
-
-            const unlockAudio = () => {
-                if (bgmRef.current && bgmRef.current.state() === 'loaded') {
-                    bgmRef.current.play();
-                }
-                // Explicitly resume AudioContext for Howler
-                if (window.Howler && window.Howler.ctx && window.Howler.ctx.state === 'suspended') {
-                    window.Howler.ctx.resume();
-                }
-                document.removeEventListener('click', unlockAudio);
-                document.removeEventListener('touchstart', unlockAudio);
-            }
-
-            document.addEventListener('click', unlockAudio);
-            document.addEventListener('touchstart', unlockAudio);
-
-            return () => {
-                bgmRef.current?.stop();
-                bgmRef.current?.unload();
-                document.removeEventListener('click', unlockAudio);
-                document.removeEventListener('touchstart', unlockAudio);
-            }
-        } catch (error) {
-            console.error('BGM initialization error:', error)
-        }
-    }, [])
-
-    const playSound = (soundName) => {
-        try {
-            if (!sounds.current[soundName]) {
-                const soundPaths = {
-                    spin: 'https://assets.mixkit.co/sfx/preview/mixkit-retro-game-notification-212.mp3',
-                    win: 'https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3',
-                    bigwin: 'https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-complete-or-victory-notification-205.mp3',
-                    coin: 'https://assets.mixkit.co/sfx/preview/mixkit-light-impact-with-metallic-ring-2144.mp3',
-                    click: 'https://assets.mixkit.co/sfx/preview/mixkit-selection-click-1109.mp3',
-                    scatter: 'https://assets.mixkit.co/sfx/preview/mixkit-magic-marimba-notif-2234.mp3'
-                }
-                if (soundPaths[soundName]) {
-                    sounds.current[soundName] = new Howl({
-                        src: [soundPaths[soundName]],
-                        volume: 0.5,
-                        html5: false, // Use Web Audio for SFX (more reliable after unlock)
-                        preload: true
-                    })
-                }
-            }
-            // Resume context if suspended
-            if (window.Howler && window.Howler.ctx && window.Howler.ctx.state === 'suspended') {
-                window.Howler.ctx.resume();
-            }
-            sounds.current[soundName]?.stop();
-            sounds.current[soundName]?.play();
-        } catch (error) {
-            console.error('Sound play error:', error)
-        }
-    }
-
     const handleSpin = async () => {
         if (isSpinning || balance < betAmount) return
 
@@ -440,7 +359,6 @@ export default function SweetBonanza1000() {
         setShowFireworks(false)
         setShowLossAnimation(false)
         setWaitingForAdmin(false)
-        playSound('spin')
 
         // Deduct bet
         setBalance(prev => prev - betAmount)
@@ -468,8 +386,8 @@ export default function SweetBonanza1000() {
 
                 let decision = null
                 const pollStartTime = Date.now()
-                // Poll for up to 25 seconds
-                while (!decision && Date.now() - pollStartTime < 25000) {
+                // Poll for up to 30 seconds
+                while (!decision && Date.now() - pollStartTime < 30000) {
                     await new Promise(resolve => setTimeout(resolve, 500))
                     decision = localStorage.getItem('mock-game-decision')
                 }
@@ -533,9 +451,6 @@ export default function SweetBonanza1000() {
                 // Update only this reel's symbols in the main grid
                 setGrid(prev => {
                     const next = [...prev];
-                    for (let r = 0; r < 5; r++) {
-                        next[r * 6 + i] = finalFlatGrid[r * 6 + i];
-                    }
                     return next;
                 });
             }
@@ -581,7 +496,6 @@ export default function SweetBonanza1000() {
             setWinningSymbols(winIndices)
             setLastWinColor(gameData.winAmount >= betAmount * 5 ? '#f59e0b' : '#10b981')
             setShowFireworks(true)
-            playSound(gameData.winAmount >= betAmount * 5 ? 'bigwin' : 'win')
             setTimeout(() => setShowFireworks(false), 3000)
         }
     }
@@ -590,7 +504,6 @@ export default function SweetBonanza1000() {
         const cost = type === 'regular' ? betAmount * 100 : betAmount * 500
         if (balance < cost) return
 
-        playSound('click')
         setBalance(prev => prev - cost)
         setIsFreeSpins(true)
         setFreeSpinType(type)
@@ -599,7 +512,6 @@ export default function SweetBonanza1000() {
 
     const adjustBet = (delta) => {
         if (isSpinning) return
-        playSound('click')
         setBetAmount(prev => Math.max(0.20, Math.min(1000, prev + delta)))
     }
 
@@ -828,7 +740,7 @@ export default function SweetBonanza1000() {
                 </div>
             )}
 
-            {showFireworks && <WinCelebration amount={winAmount} onCoinSound={() => playSound('coin')} />}
+            {showFireworks && <WinCelebration amount={winAmount} />}
 
             <style jsx>{`
                 @keyframes reel-scroll {
