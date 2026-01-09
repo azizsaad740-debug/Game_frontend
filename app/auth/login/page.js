@@ -263,33 +263,43 @@ export default function LoginPage() {
     }
   }
 
-  const handleMockAdminLogin = () => {
-    const mockAdmin = {
-      _id: 'mock-admin-id',
-      username: 'QuickAdmin',
-      email: 'admin@test.com',
-      role: 'admin',
-      balance: 1000000.00
-    };
-    localStorage.setItem('token', 'mock-jwt-token-admin');
-    localStorage.setItem('user', JSON.stringify(mockAdmin));
-    localStorage.setItem('isAdmin', 'true');
-    localStorage.setItem('adminEmail', mockAdmin.email);
-    window.location.href = '/admin';
+  const handleMockAdminLogin = async () => {
+    try {
+      setLoading(true)
+      const response = await authAPI.quickAdminLogin()
+      const { token, user, redirectPath } = response.data || {}
+
+      if (token && user) {
+        localStorage.setItem('token', token)
+        localStorage.setItem('user', JSON.stringify(user))
+        localStorage.setItem('isAdmin', 'true')
+        if (user.email) localStorage.setItem('adminEmail', user.email)
+        window.location.href = redirectPath || '/admin'
+      }
+    } catch (err) {
+      setError('Quick Admin Login failed')
+    } finally {
+      setLoading(false)
+    }
   };
 
-  const handleMockUserLogin = () => {
-    const mockUser = {
-      _id: 'mock-user-id',
-      username: 'TestPlayer',
-      email: 'player@test.com',
-      role: 'user',
-      balance: 5000.00
-    };
-    localStorage.setItem('token', 'mock-jwt-token-user');
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    localStorage.setItem('isAdmin', 'false');
-    window.location.href = '/dashboard';
+  const handleMockUserLogin = async () => {
+    try {
+      setLoading(true)
+      const response = await authAPI.quickUserLogin()
+      const { token, user, redirectPath } = response.data || {}
+
+      if (token && user) {
+        localStorage.setItem('token', token)
+        localStorage.setItem('user', JSON.stringify(user))
+        localStorage.setItem('isAdmin', 'false')
+        window.location.href = redirectPath || '/dashboard'
+      }
+    } catch (err) {
+      setError('Quick User Login failed')
+    } finally {
+      setLoading(false)
+    }
   };
 
   return (
