@@ -14,8 +14,9 @@ import { handleError } from '@/utils/errorHandler'
 const PragmaticLoading = ({ progress }) => (
     <div className="min-h-screen bg-gradient-to-br from-[#1a0a2e] via-[#16213e] to-[#0f3460] flex items-center justify-center">
         <div className="text-center">
-            <div className="mb-8">
-                <div className="text-6xl md:text-8xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 animate-pulse">
+            <div className="mb-8 px-4 py-8">
+                <div className="text-6xl md:text-8xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 animate-pulse"
+                    style={{ fontFamily: "'Enchanted Land', cursive", lineHeight: '1.4', padding: '0.2em 0' }}>
                     SWEET BONANZA
                 </div>
             </div>
@@ -597,7 +598,7 @@ export default function SweetBonanza1000() {
     if (pageLoading) return <PragmaticLoading progress={loadingProgress} />
 
     return (
-        <div className="h-screen overflow-hidden bg-[#0f172a] text-white flex flex-col font-sans select-none relative">
+        <div className="h-screen h-[100dvh] overflow-hidden bg-[#0f172a] text-white flex flex-col font-sans select-none relative">
             {/* Background */}
             <div className="fixed inset-0 bg-cover bg-center pointer-events-none opacity-60 scale-110"
                 style={{ backgroundImage: 'url("/games/sweet-bonanza-1000/background.png")' }} />
@@ -631,8 +632,8 @@ export default function SweetBonanza1000() {
                             <button
                                 onClick={() => handleAdminDecision('win')}
                                 className={`flex-1 py-3 rounded-xl font-black italic shadow-lg transition-all hover:scale-105 border-2 ${lobbyAdminDecision === 'win'
-                                        ? 'bg-green-500 border-white text-white scale-105 shadow-green-500/50'
-                                        : 'bg-green-600 border-transparent hover:bg-green-500 text-white/80'
+                                    ? 'bg-green-500 border-white text-white scale-105 shadow-green-500/50'
+                                    : 'bg-green-600 border-transparent hover:bg-green-500 text-white/80'
                                     }`}
                             >
                                 {lobbyAdminDecision === 'win' ? 'WIN ✓' : 'WIN'}
@@ -640,8 +641,8 @@ export default function SweetBonanza1000() {
                             <button
                                 onClick={() => handleAdminDecision('loss')}
                                 className={`flex-1 py-3 rounded-xl font-black italic shadow-lg transition-all hover:scale-105 border-2 ${lobbyAdminDecision === 'loss'
-                                        ? 'bg-red-500 border-white text-white scale-105 shadow-red-500/50'
-                                        : 'bg-red-600 border-transparent hover:bg-red-500 text-white/80'
+                                    ? 'bg-red-500 border-white text-white scale-105 shadow-red-500/50'
+                                    : 'bg-red-600 border-transparent hover:bg-red-500 text-white/80'
                                     }`}
                             >
                                 {lobbyAdminDecision === 'loss' ? 'LOSS ✓' : 'LOSS'}
@@ -743,27 +744,32 @@ export default function SweetBonanza1000() {
             <div className="fixed inset-0 bg-gradient-to-b from-blue-500/20 via-transparent to-pink-500/20 pointer-events-none" />
 
             {/* Top Section - Header (fixed height) */}
-            <div className="flex-shrink-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
-                <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4">
-                    <div className="flex items-center justify-center py-2">
+            <div className="flex-shrink-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm m-0 p-0">
+                <div className="mx-auto w-[110%] md:w-[92%] lg:w-[102%] flex items-center justify-center m-0 p-0">
+                    <div className="w-full overflow-visible">
                         <h1
-                            className="text-4xl md:text-6xl font-black italic tracking-tighter animate-pulse"
+                            className="w-full text-center text-6xl md:text-8xl font-normal italic tracking-normal animate-pulse px-4"
                             style={{
-                                fontFamily: "'Pacifico', cursive",
+                                fontFamily: "'Ruritania', cursive",
                                 background: 'linear-gradient(180deg, #FFD700 0%, #FFA500 50%, #FF6B00 100%)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
-                                filter: 'drop-shadow(3px 3px 0px rgba(0, 0, 0, 0.8))'
+                                filter: 'drop-shadow(4px 4px 2px rgba(0, 0, 0, 0.8))',
+                                lineHeight: '1.3',
+                                padding: '0.15em 0',
+                                position: 'relative',
+                                left: '-17px',
+                                top: '28px'
                             }}
                         >
-                            SWEET BONANZA
+                            Sweet Bonanza
                         </h1>
                     </div>
                 </div>
             </div>
 
             {/* Middle Section - Game Grid (with margins) */}
-            <div className="flex-1 flex items-center justify-center py-4 px-2 sm:px-4 my-4 relative z-30 overflow-hidden">
+            <div className="flex-1 flex items-center justify-center py-2 px-2 sm:px-4 my-2 relative z-45 overflow-hidden max-h-full">
                 <div className="w-full max-w-7xl mx-auto">
                     <div className="flex flex-col lg:flex-row items-center justify-center gap-4 md:gap-6 lg:gap-10">
 
@@ -854,7 +860,7 @@ export default function SweetBonanza1000() {
                             </div>
 
                             {/* Status Ticker */}
-                            <div className="mt-3 md:mt-4 bg-black/60 backdrop-blur-md px-4 sm:px-6 md:px-8 py-1 sm:py-1.5 rounded-lg border border-white/10 shadow-xl skew-x-[-10deg]">
+                            <div className="relative z-50 mt-3 md:mt-4 bg-black/60 backdrop-blur-md px-4 sm:px-6 md:px-8 py-1 sm:py-1.5 rounded-lg border border-white/10 shadow-xl skew-x-[-10deg]">
                                 <span className="text-sm sm:text-base md:text-lg lg:text-xl font-black italic tracking-widest text-white uppercase">
                                     {isSpinning ? t('sweetBonanza.loading') : t('sweetBonanza.placeYourBets')}
                                 </span>
@@ -863,14 +869,15 @@ export default function SweetBonanza1000() {
                             {/* Mobile Buy Buttons removed for lobby mode */}
                         </div>
 
-                        {/* Right Sidebar: Removed for lobby mode */}
+                        {/* Right Spacer to balance the layout and keep the grid centered in landscape/desktop */}
+                        <div className="hidden lg:block w-48 flex-shrink-0" aria-hidden="true" />
 
                     </div>
                 </div>
             </div>
 
-            {/* Bottom Section - Footer (fixed height with margin) */}
-            <div className="flex-shrink-0 z-40 pointer-events-none mb-2">
+            {/* Bottom Section - Footer (fixed height) */}
+            <div className="flex-shrink-0 z-40 pointer-events-none">
                 <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 pointer-events-auto">
                     {/* Lobby Controls - Universal Session */}
                     <div className="flex flex-col items-center justify-center py-2 bg-black/95 backdrop-blur-xl rounded-t-2xl border-x border-t border-white/10 relative overflow-hidden group">
