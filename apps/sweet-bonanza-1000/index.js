@@ -900,7 +900,7 @@ export default function SweetBonanza1000() {
                     <div className="flex flex-col lg:flex-row items-center justify-center gap-4 md:gap-6 lg:gap-10">
 
                         {/* Left Sidebar: Lobby Betting (Visible on all screens) */}
-                        <div className="flex flex-col gap-2 md:gap-3 w-full lg:w-48 px-4 lg:px-0">
+                        <div className="lobby-betting-controls flex flex-col gap-2 md:gap-3 w-full lg:w-48 px-4 lg:px-0">
                             <div className="text-center mb-1">
                                 <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Select Outcome</span>
                             </div>
@@ -943,7 +943,7 @@ export default function SweetBonanza1000() {
                         </div>
 
                         {/* Center: Game Grid - Responsive Size (final optimization) */}
-                        <div className="flex flex-col items-center w-full md:scale-[0.68] lg:scale-x-[0.76] lg:scale-y-[0.66]">
+                        <div className="game-grid-container flex flex-col items-center w-full md:scale-[0.68] lg:scale-x-[0.76] lg:scale-y-[0.66]">
                             <div className="relative bg-blue-400/20 backdrop-blur-xl rounded-2xl md:rounded-3xl p-1 sm:p-1 md:p-2 lg:p-2 border-[0.5px] md:border-[1px] lg:border-[1.2px] border-white/30 shadow-2xl ring-1 ring-blue-400/50 animate-neon-pulsate">
                                 {/* Admin Waiting Overlay */}
                                 {(waitingForAdmin || (isSpinning && reelSpeeds[0] > 0 && !grid[0]?.image)) && (
@@ -998,7 +998,7 @@ export default function SweetBonanza1000() {
             </div>
 
             {/* Bottom Section - Footer (fixed height) */}
-            <div className="flex-shrink-0 z-40 pointer-events-none">
+            <div className="game-footer flex-shrink-0 z-40 pointer-events-none">
                 <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 pointer-events-auto">
                     {/* Lobby Controls - Universal Session */}
                     <div className="flex flex-col items-center justify-center py-2 bg-black/95 backdrop-blur-xl rounded-t-2xl border-x border-t border-white/10 relative overflow-hidden group">
@@ -1155,13 +1155,26 @@ export default function SweetBonanza1000() {
                     left: -20.6px;
                     top: 25.7px;
                 }
-                @media (max-width: 768px) {
+                @media (max-width: 768px) and (orientation: portrait) {
                     .game-header-text {
+                        font-size: calc(2.8rem + 3px) !important;
                         letter-spacing: 4px !important;
-                        left: 0 !important;
-                        top: 0 !important;
+                        left: -10px !important;
+                        top: 15px !important;
                         margin-top: -10px !important;
                         margin-bottom: 2px !important;
+                    }
+                    .lobby-betting-controls {
+                        margin-top: -10px !important;
+                    }
+                    .lobby-betting-controls button {
+                        font-size: calc(1.125rem - 5px) !important; /* text-lg is 1.125rem */
+                    }
+                    .game-grid-container {
+                        margin-top: -10px !important;
+                    }
+                    .game-footer {
+                        margin-top: -15px !important;
                     }
                 }
             `}</style>
