@@ -286,6 +286,7 @@ export default function SweetBonanza1000() {
     const [lobbyTopWinners, setLobbyTopWinners] = useState([])
     const [lobbyRoundCycle, setLobbyRoundCycle] = useState(1)
     const [lobbyBetsCount, setLobbyBetsCount] = useState(0)
+    const [lobbyAdminDecision, setLobbyAdminDecision] = useState(null)
 
     // Refs for stable access in intervals (Crucial for avoiding stale closures)
     const lobbyRoundIdRef = useRef(null)
@@ -397,11 +398,10 @@ export default function SweetBonanza1000() {
         // Lobby Polling (Stable Interval)
         const pollLobby = async () => {
             try {
-                const token = localStorage.getItem('token');
-                const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-                const response = await axios.get('http://localhost:5000/api/sweet-bonanza/session', { headers });
+                const response = await sweetBonanzaAPI.getSession();
                 const session = response.data.data;
+
+                if (!session) return;
 
                 setLobbyPhase(session.phase);
                 setLobbyTimeLeft(session.timeLeft);
@@ -409,16 +409,22 @@ export default function SweetBonanza1000() {
                 setLobbyBetsTotals(session.betsTotals || { win: 0, loss: 0 });
                 setLobbyRoundCycle(session.roundCycle || 1);
                 setLobbyBetsCount(session.betsCount || 0);
+                setLobbyAdminDecision(session.adminDecision || null);
 
-                if (session.phase === 'BETTING' && lobbyRoundIdRef.current !== session.roundId) {
-                    setHasBetInCurrentRound(false);
-                    setUserBetSide(null);
-                    setWinningSymbols([]);
-                    setShowFireworks(false);
-                    setShowLossAnimation(false);
-                    setWinAmount(0);
+                // Always sync Round ID to avoid getting "stuck" when joining mid-game
+                if (session.roundId !== lobbyRoundIdRef.current) {
+                    if (session.phase === 'BETTING') {
+                        // Reset state for new round
+                        setHasBetInCurrentRound(false);
+                        setUserBetSide(null);
+                        setWinningSymbols([]);
+                        setShowFireworks(false);
+                        setShowLossAnimation(false);
+                        setWinAmount(0);
+                        setLobbyTopWinners([]);
+                    }
                     setLobbyRoundId(session.roundId);
-                    setLobbyTopWinners([]);
+                    lobbyRoundIdRef.current = session.roundId;
                 }
 
                 if (session.phase === 'SPINNING') {
@@ -430,6 +436,10 @@ export default function SweetBonanza1000() {
 
                 if (session.phase === 'RESULT' && session.result && session.roundId !== lastProcessedRoundIdRef.current) {
                     processLobbyResult(session.result, session.roundId);
+                } else if (session.phase === 'RESULT' && !session.result && isSpinning) {
+                    // Safety: stop spinning if server is in result but has no result data yet
+                    setIsSpinning(false);
+                    setReelSpeeds([0, 0, 0, 0, 0, 0]);
                 }
 
             } catch (err) {
@@ -517,25 +527,13 @@ export default function SweetBonanza1000() {
         }
 
         try {
-            const token = localStorage.getItem('token');
-
-            const headers = {};
-            if (token) {
-                headers.Authorization = `Bearer ${token}`;
-            }
-
             console.log('[BET] Sending bet to server:', { betAmount, side });
-            const response = await axios.post('http://localhost:5000/api/sweet-bonanza/bet', {
-                betAmount,
-                side
-            }, {
-                headers
-            });
+            const response = await sweetBonanzaAPI.placeLobbyBet(betAmount, side);
 
             console.log('[BET] Bet successful:', response.data);
             setUserBetSide(side);
             setHasBetInCurrentRound(true);
-            setBalance(prev => prev - betAmount);
+            fetchUserData(); // Immediate balance refresh
         } catch (err) {
             console.error('[BET] Bet error:', err);
             alert(err.response?.data?.message || 'Failed to place bet');
@@ -544,14 +542,10 @@ export default function SweetBonanza1000() {
 
     const handleAdminDecision = async (decision) => {
         try {
-            const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/sweet-bonanza/admin-decision',
-                { decision },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await sweetBonanzaAPI.submitAdminDecision(decision);
             console.log(`Admin decision sent: ${decision}`);
         } catch (err) {
-            console.error('Admin decision error:', err);
+            console.error('Admin decision failed:', err);
             alert('Failed to send admin decision');
         }
     }
@@ -609,7 +603,7 @@ export default function SweetBonanza1000() {
                 style={{ backgroundImage: 'url("/games/sweet-bonanza-1000/background.png")' }} />
 
             {/* Admin Popup (Only for admins during spinning) */}
-            {user?.role === 'admin' && lobbyPhase === 'SPINNING' && !isSpinning && (
+            {user?.role === 'admin' && lobbyPhase === 'SPINNING' && (
                 <div className="fixed top-20 right-4 z-[200] bg-black/90 backdrop-blur-xl p-6 rounded-3xl border-2 border-yellow-400 shadow-[0_0_50px_rgba(0,0,0,0.5)] w-80 animate-in slide-in-from-right duration-500">
                     <div className="flex flex-col gap-4">
                         <div className="text-center">
@@ -636,12 +630,22 @@ export default function SweetBonanza1000() {
                         <div className="flex gap-2 mt-2">
                             <button
                                 onClick={() => handleAdminDecision('win')}
-                                className="flex-1 bg-green-600 hover:bg-green-500 py-3 rounded-xl font-black italic shadow-lg shadow-green-900/40 transition-all hover:scale-105"
-                            >WIN</button>
+                                className={`flex-1 py-3 rounded-xl font-black italic shadow-lg transition-all hover:scale-105 border-2 ${lobbyAdminDecision === 'win'
+                                        ? 'bg-green-500 border-white text-white scale-105 shadow-green-500/50'
+                                        : 'bg-green-600 border-transparent hover:bg-green-500 text-white/80'
+                                    }`}
+                            >
+                                {lobbyAdminDecision === 'win' ? 'WIN ✓' : 'WIN'}
+                            </button>
                             <button
                                 onClick={() => handleAdminDecision('loss')}
-                                className="flex-1 bg-red-600 hover:bg-red-500 py-3 rounded-xl font-black italic shadow-lg shadow-red-900/40 transition-all hover:scale-105"
-                            >LOSS</button>
+                                className={`flex-1 py-3 rounded-xl font-black italic shadow-lg transition-all hover:scale-105 border-2 ${lobbyAdminDecision === 'loss'
+                                        ? 'bg-red-500 border-white text-white scale-105 shadow-red-500/50'
+                                        : 'bg-red-600 border-transparent hover:bg-red-500 text-white/80'
+                                    }`}
+                            >
+                                {lobbyAdminDecision === 'loss' ? 'LOSS ✓' : 'LOSS'}
+                            </button>
                         </div>
 
                         <div className="text-center mt-2">
@@ -688,16 +692,16 @@ export default function SweetBonanza1000() {
                                 {lobbyTopWinners.map((winner, idx) => (
                                     <div key={idx}
                                         className={`group flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${winner.isReal
-                                                ? 'bg-yellow-400/10 border-yellow-400/30 hover:bg-yellow-400/15'
-                                                : 'bg-white/2 border-white/5 hover:bg-white/5'
+                                            ? 'bg-yellow-400/10 border-yellow-400/30 hover:bg-yellow-400/15'
+                                            : 'bg-white/2 border-white/5 hover:bg-white/5'
                                             }`}
                                         style={{ animationDelay: `${idx * 100}ms` }}
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black italic shadow-inner ${idx === 0 ? 'bg-gradient-to-br from-yellow-300 to-amber-600 text-black' :
-                                                    idx === 1 ? 'bg-gradient-to-br from-slate-200 to-slate-400 text-black' :
-                                                        idx === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-500 text-black' :
-                                                            'bg-white/5 text-white/40'
+                                                idx === 1 ? 'bg-gradient-to-br from-slate-200 to-slate-400 text-black' :
+                                                    idx === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-500 text-black' :
+                                                        'bg-white/5 text-white/40'
                                                 }`}>
                                                 #{idx + 1}
                                             </div>
