@@ -1160,13 +1160,13 @@ export default function SweetBonanza1000() {
                 }
                 @media (max-width: 768px) and (orientation: portrait) {
                     .h-screen.h-\[100dvh\] {
-                        margin-top: calc(-10px - 15px - 8px) !important;
+                        margin-top: calc(-10px - 15px - 8px - 12px) !important;
                     }
                     .game-header-text {
-                        font-size: calc(2.8rem + 3px + 10px + 5px + 3px) !important;
+                        font-size: calc(2.8rem + 3px + 10px + 5px + 3px + 2px) !important;
                         letter-spacing: 4px !important;
                         left: calc(-10px - 2px) !important;
-                        top: calc(15px + 10px + 10px + 15px) !important;
+                        top: calc(15px + 10px + 10px + 15px + 15px) !important;
                         margin-top: -10px !important;
                         margin-bottom: 2px !important;
                     }
