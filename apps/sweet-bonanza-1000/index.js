@@ -475,6 +475,8 @@ export default function SweetBonanza1000() {
             const userData = response?.data || response || null
             if (userData) {
                 console.log('[DEBUG] Fetched User Balance:', userData.balance);
+                console.log('[DEBUG] User Role:', userData.role);
+                console.log('[DEBUG] Full User Data:', userData);
                 setUser(userData)
                 const userBalance = userData.balance !== undefined ? userData.balance :
                     (userData.user?.balance !== undefined ? userData.user.balance : 0)
@@ -516,6 +518,7 @@ export default function SweetBonanza1000() {
                 if (!session) return;
 
                 setLobbyPhase(session.phase);
+                console.log('[DEBUG] Lobby Phase:', session.phase);
                 setLobbyTimeLeft(session.timeLeft);
                 setLobbyViewersCount(session.viewersCount || 0);
                 setLobbyBetsTotals(session.betsTotals || { win: 0, loss: 0 });
