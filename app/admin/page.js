@@ -10,11 +10,11 @@ import { log } from '@/utils/logger'
 import NotificationDropdown from '@/components/NotificationDropdown'
 import { useTranslation } from '@/hooks/useTranslation'
 import AdminSidebar from '@/components/AdminSidebar'
-import { 
-  mockAdminStats, 
-  mockAdminTransactions, 
+import {
+  mockAdminStats,
+  mockAdminTransactions,
   mockAdminChartData,
-  simulateApiDelay 
+  simulateApiDelay
 } from '@/lib/mockData'
 import {
   LineChart,
@@ -46,20 +46,24 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [lobbyState, setLobbyState] = useState(null)
 
 
 
   useEffect(() => {
     fetchDashboardData()
     fetchChartData()
+    fetchLobbyData()
+    const lobbyInterval = setInterval(fetchLobbyData, 2000)
+    return () => clearInterval(lobbyInterval)
   }, [])
 
   const fetchDashboardData = async () => {
     const USE_MOCK_DATA = false
-    
+
     setLoading(true)
     setError('')
-    
+
     if (USE_MOCK_DATA) {
       await simulateApiDelay(800)
       setStats(mockAdminStats)
@@ -81,7 +85,7 @@ function AdminDashboard() {
 
       setStats(statsResponse.data.stats)
       setRecentTransactions(transactionsResponse.data.transactions || [])
-      
+
       // Fetch popular games data
       if (statsResponse.data.popularGames) {
         setPopularGames(statsResponse.data.popularGames)
@@ -99,9 +103,9 @@ function AdminDashboard() {
 
   const fetchChartData = async () => {
     const USE_MOCK_DATA = false
-    
+
     setChartLoading(true)
-    
+
     if (USE_MOCK_DATA) {
       await simulateApiDelay(600)
       setChartData(mockAdminChartData)
@@ -121,10 +125,19 @@ function AdminDashboard() {
     }
   }
 
+  const fetchLobbyData = async () => {
+    try {
+      const response = await adminAPI.getSweetBonanzaLobby()
+      setLobbyState(response.data.data)
+    } catch (err) {
+      console.error('Lobby fetch error:', err)
+    }
+  }
+
   const handleSearch = (e) => {
     e.preventDefault()
     if (!searchQuery.trim()) return
-    
+
     // Navigate to appropriate page based on search
     // For now, redirect to users page with search query
     window.location.href = `/admin/users?search=${encodeURIComponent(searchQuery)}`
@@ -134,7 +147,7 @@ function AdminDashboard() {
     try {
       // Create CSV data
       const csvRows = []
-      
+
       // Add stats
       csvRows.push('Dashboard Statistics')
       csvRows.push('Metric,Value,Change')
@@ -144,7 +157,7 @@ function AdminDashboard() {
       csvRows.push(`New Registrations (24h),${stats.newRegistrations24h.value},${stats.newRegistrations24h.change}%`)
       csvRows.push(`Revenue,${formatAmount(stats.revenue.value)},${stats.revenue.change}%`)
       csvRows.push('')
-      
+
       // Add transactions
       csvRows.push('Recent Transactions')
       csvRows.push('ID,User,Date,Amount,Type,Status')
@@ -158,7 +171,7 @@ function AdminDashboard() {
           tx.status
         ].join(','))
       })
-      
+
       // Create blob and download
       const csvContent = csvRows.join('\n')
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
@@ -244,7 +257,7 @@ function AdminDashboard() {
                   const user = JSON.parse(userStr)
                   return <NotificationDropdown userId={user._id || user.id} />
                 }
-              } catch (e) {}
+              } catch (e) { }
               return null
             })()}
             <div
@@ -263,7 +276,7 @@ function AdminDashboard() {
               <p className="text-white text-3xl md:text-4xl font-black tracking-tight">Dashboard Overview</p>
               <p className="text-gray-400 text-base font-normal">Welcome back, Admin! Here&apos;s what&apos;s happening today.</p>
             </div>
-            <button 
+            <button
               onClick={handleExportData}
               disabled={loading}
               className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-primary text-background-dark text-sm font-bold hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -321,6 +334,19 @@ function AdminDashboard() {
                   {formatChange(stats.newRegistrations24h.change)}
                 </p>
               </div>
+              <div className="flex flex-col gap-2 rounded-lg bg-surface p-5 shadow-lg border-2 border-pink-500/30">
+                <p className="text-sm font-medium text-pink-400">Sweet Bonanza Lobby</p>
+                <div className="flex justify-between items-end">
+                  <div>
+                    <p className="text-3xl font-bold text-white">{lobbyState?.totalPlayers || 0} Players</p>
+                    <p className="text-xs text-gray-400 mt-1 uppercase tracking-widest">{lobbyState?.phase || 'OFFLINE'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-black text-pink-500 italic">00:{lobbyState?.timeLeft?.toString().padStart(2, '0') || '00'}</p>
+                    <p className="text-[10px] text-gray-500">TIMER</p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -350,26 +376,26 @@ function AdminDashboard() {
                     <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#FCD34D" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#FCD34D" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#FCD34D" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#FCD34D" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="colorDeposits" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#22D3EE" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#22D3EE" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#22D3EE" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#22D3EE" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="colorWithdrawals" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#F87171" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#F87171" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#F87171" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#F87171" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#3e3e47" />
-                      <XAxis 
-                        dataKey="displayDate" 
+                      <XAxis
+                        dataKey="displayDate"
                         stroke="#9ca3af"
                         style={{ fontSize: '12px' }}
                         tick={{ fill: '#9ca3af' }}
                       />
-                      <YAxis 
+                      <YAxis
                         stroke="#9ca3af"
                         style={{ fontSize: '12px' }}
                         tick={{ fill: '#9ca3af' }}
@@ -395,7 +421,7 @@ function AdminDashboard() {
                           return [formattedValue, labels[name] || name]
                         }}
                       />
-                      <Legend 
+                      <Legend
                         wrapperStyle={{ paddingTop: '20px' }}
                         iconType="line"
                         formatter={(value) => {

@@ -274,6 +274,46 @@ export default function SweetBonanza1000() {
     const [waitingForAdmin, setWaitingForAdmin] = useState(false)
     const [user, setUser] = useState(null)
 
+    // Lobby / Universal Session state
+    const [lobbyPhase, setLobbyPhase] = useState('BETTING')
+    const [lobbyTimeLeft, setLobbyTimeLeft] = useState(10)
+    const [lobbyRoundId, setLobbyRoundId] = useState(null)
+    const [userBetSide, setUserBetSide] = useState(null)
+    const [hasBetInCurrentRound, setHasBetInCurrentRound] = useState(false)
+    const [lastProcessedRoundId, setLastProcessedRoundId] = useState(null)
+    const [lobbyViewersCount, setLobbyViewersCount] = useState(0)
+    const [lobbyBetsTotals, setLobbyBetsTotals] = useState({ win: 0, loss: 0 })
+    const [lobbyTopWinners, setLobbyTopWinners] = useState([])
+    const [lobbyRoundCycle, setLobbyRoundCycle] = useState(1)
+    const [lobbyBetsCount, setLobbyBetsCount] = useState(0)
+
+    // Refs for stable access in intervals (Crucial for avoiding stale closures)
+    const lobbyRoundIdRef = useRef(null)
+    const lastProcessedRoundIdRef = useRef(null)
+    const lobbyPhaseRef = useRef('BETTING')
+    const spinningRoundIdRef = useRef(null)
+    const userBetSideRef = useRef(null)
+    const betAmountRef = useRef(3.50)
+
+    useEffect(() => {
+        lobbyRoundIdRef.current = lobbyRoundId
+    }, [lobbyRoundId])
+
+    useEffect(() => {
+        lastProcessedRoundIdRef.current = lastProcessedRoundId
+    }, [lastProcessedRoundId])
+
+    useEffect(() => {
+        lobbyPhaseRef.current = lobbyPhase
+    }, [lobbyPhase])
+
+    useEffect(() => {
+        userBetSideRef.current = userBetSide
+    }, [userBetSide])
+
+    useEffect(() => {
+        betAmountRef.current = betAmount
+    }, [betAmount])
     // Free spins state
     const [isFreeSpins, setIsFreeSpins] = useState(false)
     const [freeSpinsRemaining, setFreeSpinsRemaining] = useState(0)
@@ -341,138 +381,183 @@ export default function SweetBonanza1000() {
         handleResize()
         window.addEventListener('resize', handleResize)
 
+        // Background Music
+        const bgm = new Audio('/assets/bgm/sweet bonanza bgm.mp3');
+        bgm.loop = true;
+        bgm.volume = 0.4;
+        const playBgm = () => {
+            bgm.play().catch(e => console.log('BGM Autoplay blocked, waiting for interaction'));
+        };
+        playBgm();
+        document.addEventListener('click', playBgm, { once: true });
+
         fetchUserData()
         const balanceInterval = setInterval(fetchUserData, 5000)
+
+        // Lobby Polling (Stable Interval)
+        const pollLobby = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+                const response = await axios.get('http://localhost:5000/api/sweet-bonanza/session', { headers });
+                const session = response.data.data;
+
+                setLobbyPhase(session.phase);
+                setLobbyTimeLeft(session.timeLeft);
+                setLobbyViewersCount(session.viewersCount || 0);
+                setLobbyBetsTotals(session.betsTotals || { win: 0, loss: 0 });
+                setLobbyRoundCycle(session.roundCycle || 1);
+                setLobbyBetsCount(session.betsCount || 0);
+
+                if (session.phase === 'BETTING' && lobbyRoundIdRef.current !== session.roundId) {
+                    setHasBetInCurrentRound(false);
+                    setUserBetSide(null);
+                    setWinningSymbols([]);
+                    setShowFireworks(false);
+                    setShowLossAnimation(false);
+                    setWinAmount(0);
+                    setLobbyRoundId(session.roundId);
+                    setLobbyTopWinners([]);
+                }
+
+                if (session.phase === 'SPINNING') {
+                    if (session.roundId !== spinningRoundIdRef.current && session.roundId !== lastProcessedRoundIdRef.current) {
+                        spinningRoundIdRef.current = session.roundId;
+                        startLobbySpin();
+                    }
+                }
+
+                if (session.phase === 'RESULT' && session.result && session.roundId !== lastProcessedRoundIdRef.current) {
+                    processLobbyResult(session.result, session.roundId);
+                }
+
+            } catch (err) {
+                console.error('Lobby poll error:', err);
+            }
+        };
+
+        const lobbyInterval = setInterval(pollLobby, 1000);
+        pollLobby();
 
         return () => {
             clearInterval(interval)
             clearInterval(balanceInterval)
+            clearInterval(lobbyInterval)
             window.removeEventListener('resize', handleResize)
+            bgm.pause();
+            bgm.src = '';
+            document.removeEventListener('click', playBgm);
         }
     }, [])
 
-    const handleSpin = async () => {
-        if (isSpinning || balance < betAmount) return
+    const startLobbySpin = () => {
+        setIsSpinning(true);
+        setReelSpeeds([1, 1, 1, 1, 1, 1]);
+        reelSpeedsRef.current = [1, 1, 1, 1, 1, 1];
+    };
 
-        setIsSpinning(true)
-        setWinningSymbols([])
-        setShowFireworks(false)
-        setShowLossAnimation(false)
-        setWaitingForAdmin(false)
+    const processLobbyResult = async (result, roundId) => {
+        const currentBetSide = userBetSideRef.current;
+        const currentBetAmount = betAmountRef.current;
 
-        // Deduct bet
-        setBalance(prev => prev - betAmount)
+        console.log('[RESULT] CRITICAL CHECK:', {
+            roundId,
+            serverOutcome: result.outcome,
+            localUserBetSide: currentBetSide,
+            match: currentBetSide === result.outcome
+        });
 
-        // Reset and start all reels spinning
-        reelSpeedsRef.current = [1, 1, 1, 1, 1, 1]
-        setReelSpeeds([...reelSpeedsRef.current])
+        setLastProcessedRoundId(roundId);
+        lastProcessedRoundIdRef.current = roundId; // Update ref immediately
+        setLobbyTopWinners(result.topWinners || []);
+
+        // Sync reels
+        const finalFlatGrid = Array(30).fill(null);
+        for (let c = 0; c < 6; c++) {
+            for (let r = 0; r < 5; r++) {
+                const symId = result.reels[c][r];
+                finalFlatGrid[r * 6 + c] = symbols.find(s => s.id === symId) || symbols[0];
+            }
+        }
+        setGrid(finalFlatGrid);
+
+        // Stop reels sequentially
+        for (let i = 0; i < 6; i++) {
+            await new Promise(resolve => setTimeout(resolve, 300 + i * 100)); // Adjusted delay
+            reelSpeedsRef.current[i] = 0;
+            setReelSpeeds([...reelSpeedsRef.current]);
+        }
+
+        setTimeout(() => {
+            setIsSpinning(false);
+
+            if (currentBetSide === result.outcome) {
+                console.log('[RESULT] => TRIGGERING WIN SCREEN');
+                setWinAmount(currentBetAmount * 2);
+                setShowFireworks(true);
+                fetchUserData(); // Refresh balance
+                setTimeout(() => setShowFireworks(false), 9000); // Adjusted duration
+            } else if (currentBetSide) {
+                console.log('[RESULT] => TRIGGERING LOSS SCREEN');
+                setShowLossAnimation(true);
+                setTimeout(() => setShowLossAnimation(false), 9000); // Adjusted duration
+            } else {
+                console.log('[RESULT] => VIEWER ONLY (NO BET)');
+            }
+        }, 500);
+    };
+
+    const handlePlaceLobbyBet = async (side) => {
+        console.log('[BET] Attempting to place bet:', { side, hasBetInCurrentRound, lobbyPhase, balance, betAmount });
+
+        if (hasBetInCurrentRound || lobbyPhase !== 'BETTING' || balance < betAmount) {
+            console.log('[BET] Bet blocked:', { hasBetInCurrentRound, lobbyPhase, balance, betAmount });
+            return;
+        }
 
         try {
-            let gameData;
-            const isMock = localStorage.getItem('token')?.startsWith('mock');
+            const token = localStorage.getItem('token');
 
-            if (isMock) {
-                setWaitingForAdmin(true)
-                // --- REAL-TIME MOCK WAITING FOR ADMIN ---
-                localStorage.setItem('mock-spin-request', JSON.stringify({
-                    _id: 'mock-spin-' + Date.now(),
-                    username: user?.username || 'MockUser',
-                    betAmount: betAmount,
-                    gameType: 'sweet-bonanza',
-                    createdAt: new Date().toISOString()
-                }))
-
-                localStorage.removeItem('mock-game-decision')
-
-                let decision = null
-                const pollStartTime = Date.now()
-                // Poll for up to 30 seconds
-                while (!decision && Date.now() - pollStartTime < 30000) {
-                    await new Promise(resolve => setTimeout(resolve, 500))
-                    decision = localStorage.getItem('mock-game-decision')
-                }
-
-                localStorage.removeItem('mock-game-decision')
-                localStorage.removeItem('mock-spin-request')
-                setWaitingForAdmin(false)
-
-                // Generate result based on decision
-                const resultSymbols = ['heart', 'apple', 'banana', 'grapes', 'plum', 'watermelon', 'oval', 'pentagon', 'square'];
-                let finalWinningIndices = []
-                let localWinAmount = 0
-
-                // 2D Reels [6 columns][5 rows]
-                let finalReels = Array(6).fill(null).map(() => Array(5).fill(null).map(() => symbols[Math.floor(Math.random() * (symbols.length - 1))].id))
-
-                if (decision === 'win') {
-                    localWinAmount = betAmount * (Math.floor(Math.random() * 8) + 3)
-                    const winSymbolId = resultSymbols[Math.floor(Math.random() * 7)] // Avoid scatter for simplicity in mock win
-                    const winCount = Math.floor(Math.random() * 5) + 8;
-                    for (let i = 0; i < winCount; i++) {
-                        const r = Math.floor(Math.random() * 6);
-                        const s = Math.floor(Math.random() * 5);
-                        finalReels[r][s] = winSymbolId;
-                    }
-                }
-
-                gameData = {
-                    reels: finalReels,
-                    winAmount: localWinAmount
-                }
-            } else {
-                // Real API Call
-                setWaitingForAdmin(true)
-                const response = await sweetBonanzaAPI.playGame(betAmount);
-                gameData = response.data?.data || response.data;
-                setWaitingForAdmin(false)
+            const headers = {};
+            if (token) {
+                headers.Authorization = `Bearer ${token}`;
             }
 
-            // Sync symbols from API result (strings) back to symbol objects
-            const apiReels = gameData.reels; // Expecting [6][5]
-            const finalFlatGrid = Array(30).fill(null);
+            console.log('[BET] Sending bet to server:', { betAmount, side });
+            const response = await axios.post('http://localhost:5000/api/sweet-bonanza/bet', {
+                betAmount,
+                side
+            }, {
+                headers
+            });
 
-            // Map 2D API reels back to flat grid Row-major (as SB1000 renders)
-            // API: reels[col][row] -> Grid: grid[row*6 + col]
-            for (let c = 0; c < 6; c++) {
-                for (let r = 0; r < 5; r++) {
-                    const symId = apiReels[c][r];
-                    finalFlatGrid[r * 6 + c] = symbols.find(s => s.id === symId) || symbols[0];
-                }
-            }
-
-            // --- STAGGERED STOP ANIMATION (Fast to Slow feel) ---
-            for (let i = 0; i < 6; i++) {
-                // Small delay between reel stops for "fast to slow" sequential stopping
-                await new Promise(resolve => setTimeout(resolve, 400 + i * 100));
-
-                reelSpeedsRef.current[i] = 0;
-                setReelSpeeds([...reelSpeedsRef.current]);
-
-                // Update only this reel's symbols in the main grid
-                setGrid(prev => {
-                    const next = [...prev];
-                    return next;
-                });
-            }
-
-            setTimeout(() => {
-                setIsSpinning(false);
-                setWinAmount(gameData.winAmount);
-                if (gameData.winAmount > 0) {
-                    setBalance(prev => prev + gameData.winAmount);
-                    checkWinAfterStop(gameData, finalFlatGrid);
-                } else {
-                    setShowLossAnimation(true);
-                    setTimeout(() => setShowLossAnimation(false), 2000);
-                }
-            }, 500);
-
-        } catch (error) {
-            console.error('Spin error:', error);
-            setIsSpinning(false);
-            setReelSpeeds([0, 0, 0, 0, 0, 0]);
-            reelSpeedsRef.current = [0, 0, 0, 0, 0, 0];
+            console.log('[BET] Bet successful:', response.data);
+            setUserBetSide(side);
+            setHasBetInCurrentRound(true);
+            setBalance(prev => prev - betAmount);
+        } catch (err) {
+            console.error('[BET] Bet error:', err);
+            alert(err.response?.data?.message || 'Failed to place bet');
         }
+    };
+
+    const handleAdminDecision = async (decision) => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post('http://localhost:5000/api/sweet-bonanza/admin-decision',
+                { decision },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            console.log(`Admin decision sent: ${decision}`);
+        } catch (err) {
+            console.error('Admin decision error:', err);
+            alert('Failed to send admin decision');
+        }
+    }
+
+    const handleSpin = () => {
+        // Disabled for lobby mode
     }
 
     const checkWinAfterStop = (gameData, finalGrid) => {
@@ -522,41 +607,153 @@ export default function SweetBonanza1000() {
             {/* Background */}
             <div className="fixed inset-0 bg-cover bg-center pointer-events-none opacity-60 scale-110"
                 style={{ backgroundImage: 'url("/games/sweet-bonanza-1000/background.png")' }} />
+
+            {/* Admin Popup (Only for admins during spinning) */}
+            {user?.role === 'admin' && lobbyPhase === 'SPINNING' && !isSpinning && (
+                <div className="fixed top-20 right-4 z-[200] bg-black/90 backdrop-blur-xl p-6 rounded-3xl border-2 border-yellow-400 shadow-[0_0_50px_rgba(0,0,0,0.5)] w-80 animate-in slide-in-from-right duration-500">
+                    <div className="flex flex-col gap-4">
+                        <div className="text-center">
+                            <h3 className="text-yellow-400 font-black italic text-xl">ADMIN CONTROL</h3>
+                            <p className="text-white/40 text-[10px] uppercase tracking-widest mt-1">Select Round Outcome</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 py-2 border-y border-white/10">
+                            <div className="text-center">
+                                <p className="text-green-400 font-black text-lg">₺ {lobbyBetsTotals.win.toLocaleString()}</p>
+                                <p className="text-[8px] text-white/50">WIN SIDE BETS</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-red-400 font-black text-lg">₺ {lobbyBetsTotals.loss.toLocaleString()}</p>
+                                <p className="text-[8px] text-white/50">LOSS SIDE BETS</p>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between text-[10px] font-bold text-white/60">
+                            <span>PLAYERS: {lobbyBetsCount}</span>
+                            <span>WATCHING: {lobbyViewersCount}</span>
+                        </div>
+
+                        <div className="flex gap-2 mt-2">
+                            <button
+                                onClick={() => handleAdminDecision('win')}
+                                className="flex-1 bg-green-600 hover:bg-green-500 py-3 rounded-xl font-black italic shadow-lg shadow-green-900/40 transition-all hover:scale-105"
+                            >WIN</button>
+                            <button
+                                onClick={() => handleAdminDecision('loss')}
+                                className="flex-1 bg-red-600 hover:bg-red-500 py-3 rounded-xl font-black italic shadow-lg shadow-red-900/40 transition-all hover:scale-105"
+                            >LOSS</button>
+                        </div>
+
+                        <div className="text-center mt-2">
+                            <p className="text-[10px] text-yellow-500/80 font-bold">
+                                {lobbyRoundCycle === 1 ? 'ALGO: ENFORCING MAJORITY LOSS (R1)' :
+                                    lobbyRoundCycle === 5 ? 'ALGO: ENFORCING MAJORITY WIN (R5)' :
+                                        'ALGO: ANTI-MAJORITY ACTIVE'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Viewer Screen: Live Winners List (Only for non-players) */}
+            {lobbyPhase === 'RESULT' && !userBetSide && !isSpinning && lobbyTopWinners.length > 0 && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-[#0f071a]/95 backdrop-blur-2xl animate-fade-in" />
+
+                    <div className="relative w-full max-w-2xl bg-gradient-to-b from-[#2d1b4e] to-[#12081d] rounded-[3rem] border-2 border-yellow-400/30 shadow-[0_0_100px_rgba(0,0,0,0.8)] overflow-hidden animate-in zoom-in duration-500">
+                        {/* Header Section */}
+                        <div className="relative py-8 px-6 text-center border-b border-white/5 bg-white/2">
+                            <div className="absolute top-4 left-6 flex items-center gap-2">
+                                <span className="flex h-2 w-2 rounded-full bg-red-500 animate-ping" />
+                                <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Live Result</span>
+                            </div>
+                            <h2 className="text-5xl md:text-6xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-amber-600 filter drop-shadow-xl">
+                                LIVE WINNERS
+                            </h2>
+                            <div className="flex items-center justify-center gap-4 mt-4">
+                                <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10">
+                                    <span className="material-symbols-outlined text-xs text-blue-400">group</span>
+                                    <span className="text-[10px] font-bold text-white/60">{lobbyViewersCount} Watching</span>
+                                </div>
+                                <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10">
+                                    <span className="material-symbols-outlined text-xs text-yellow-500">history</span>
+                                    <span className="text-[10px] font-bold text-white/60">Round #{lobbyRoundId?.slice(-6)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* List Section */}
+                        <div className="p-6 md:p-10">
+                            <div className="grid grid-cols-1 gap-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                                {lobbyTopWinners.map((winner, idx) => (
+                                    <div key={idx}
+                                        className={`group flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${winner.isReal
+                                                ? 'bg-yellow-400/10 border-yellow-400/30 hover:bg-yellow-400/15'
+                                                : 'bg-white/2 border-white/5 hover:bg-white/5'
+                                            }`}
+                                        style={{ animationDelay: `${idx * 100}ms` }}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black italic shadow-inner ${idx === 0 ? 'bg-gradient-to-br from-yellow-300 to-amber-600 text-black' :
+                                                    idx === 1 ? 'bg-gradient-to-br from-slate-200 to-slate-400 text-black' :
+                                                        idx === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-500 text-black' :
+                                                            'bg-white/5 text-white/40'
+                                                }`}>
+                                                #{idx + 1}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className={`font-black tracking-tight ${winner.isReal ? 'text-yellow-400' : 'text-white/70'}`}>
+                                                    {winner.id}
+                                                </span>
+                                                <span className="text-[8px] uppercase tracking-widest font-bold text-white/20">
+                                                    {winner.isReal ? 'Verified Player' : 'Pro Player'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-2xl font-black italic text-green-400 tracking-tighter group-hover:scale-110 transition-transform">
+                                                ₺ {winner.amount.toLocaleString()}
+                                            </span>
+                                            {winner.isReal && (
+                                                <span className="text-[8px] text-yellow-500/50 font-black animate-pulse">BIG WIN</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={() => router.push('/deposit')}
+                                className="w-full mt-10 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 py-5 rounded-[2rem] text-black font-black text-2xl italic shadow-[0_10px_40px_rgba(251,191,36,0.2)] hover:shadow-[0_15px_60px_rgba(251,191,36,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all group"
+                            >
+                                <span className="flex items-center justify-center gap-3">
+                                    JOIN THE WINNERS!
+                                    <span className="material-symbols-outlined font-black group-hover:translate-x-2 transition-transform">trending_up</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="fixed inset-0 bg-gradient-to-b from-blue-500/20 via-transparent to-pink-500/20 pointer-events-none" />
 
             {/* Top Section - Header (fixed height) */}
             <div className="flex-shrink-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
                 <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4">
-                    <div className="grid grid-cols-3 items-center gap-2 md:gap-4">
-                        {/* Left: Scatter Info */}
-                        <div className="flex flex-col gap-1 md:gap-2">
-                            <div className="bg-black/60 backdrop-blur-md rounded-lg md:rounded-xl p-1.5 md:p-2 border border-pink-500/30 shadow-lg w-fit">
-                                <span className="text-xs sm:text-sm md:text-base font-black text-pink-400 italic">4 X SCATTER</span>
-                                <div className="text-[6px] sm:text-[7px] md:text-[8px] uppercase font-bold text-white/60">FREE SPINS</div>
-                            </div>
-                        </div>
-
-                        {/* Center: Remaining Spins */}
-                        <div className="flex justify-center">
-                            {isFreeSpins && (
-                                <div className="bg-gradient-to-b from-purple-500 to-purple-800 rounded-lg md:rounded-xl p-2 md:p-3 border border-white/30 md:border-2 shadow-lg">
-                                    <div className="text-[6px] sm:text-[7px] md:text-[8px] uppercase font-black text-white/60 tracking-widest text-center">Remaining Spins</div>
-                                    <div className="text-xl sm:text-2xl md:text-3xl font-black text-white italic text-center">{freeSpinsRemaining}</div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Right: Volatility */}
-                        <div className="flex justify-end">
-                            <div className="bg-black/60 backdrop-blur-md rounded-lg md:rounded-xl p-1.5 md:p-2 border border-blue-500/30 shadow-lg w-fit">
-                                <span className="text-[6px] sm:text-[7px] md:text-[8px] font-bold text-white/40 uppercase tracking-widest block text-right">{t('sweetBonanza.volatility')}</span>
-                                <div className="flex gap-0.5 justify-end">
-                                    {[1, 2, 3, 4, 5].map(i => (
-                                        <span key={i} className="material-symbols-outlined text-yellow-400 text-[10px] sm:text-xs leading-none animate-pulse">bolt</span>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                    <div className="flex items-center justify-center py-2">
+                        <h1
+                            className="text-4xl md:text-6xl font-black italic tracking-tighter animate-pulse"
+                            style={{
+                                fontFamily: "'Pacifico', cursive",
+                                background: 'linear-gradient(180deg, #FFD700 0%, #FFA500 50%, #FF6B00 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                filter: 'drop-shadow(3px 3px 0px rgba(0, 0, 0, 0.8))'
+                            }}
+                        >
+                            SWEET BONANZA
+                        </h1>
                     </div>
                 </div>
             </div>
@@ -566,18 +763,47 @@ export default function SweetBonanza1000() {
                 <div className="w-full max-w-7xl mx-auto">
                     <div className="flex flex-col lg:flex-row items-center justify-center gap-4 md:gap-6 lg:gap-10">
 
-                        {/* Left Sidebar: Buy Features (Desktop) */}
-                        <div className="hidden lg:flex flex-col gap-3">
-                            <button onClick={() => handleBuyFreeSpins('regular')} disabled={isSpinning || balance < (betAmount * 100)}
-                                className="bg-[#b91c1c] border-2 border-[#fcd34d] px-6 py-3 rounded-2xl shadow-xl hover:scale-105 transition-all text-center min-w-[180px] disabled:opacity-50">
-                                <span className="text-[10px] font-black text-white uppercase block mb-1">{t('sweetBonanza.buyFreeSpins')}</span>
-                                <span className="text-2xl font-black text-white italic">₺ {(betAmount * 100).toLocaleString()}</span>
-                            </button>
-                            <button onClick={() => handleBuyFreeSpins('super')} disabled={isSpinning || balance < (betAmount * 500)}
-                                className="bg-[#ea580c] border-2 border-[#fcd34d] px-6 py-3 rounded-2xl shadow-xl hover:scale-105 transition-all text-center min-w-[180px] disabled:opacity-50">
-                                <span className="text-[10px] font-black text-white uppercase block mb-1">{t('sweetBonanza.buySuperFreeSpins')}</span>
-                                <span className="text-2xl font-black text-white italic">₺ {(betAmount * 500).toLocaleString()}</span>
-                            </button>
+                        {/* Left Sidebar: Lobby Betting (Visible on all screens) */}
+                        <div className="flex flex-col gap-2 md:gap-3 w-full lg:w-48 px-4 lg:px-0">
+                            <div className="text-center mb-1">
+                                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Select Outcome</span>
+                            </div>
+                            <div className="flex flex-row gap-2 w-full">
+                                <button
+                                    onClick={() => handlePlaceLobbyBet('win')}
+                                    disabled={lobbyPhase !== 'BETTING' || hasBetInCurrentRound || balance < betAmount}
+                                    className={`flex-1 relative overflow-hidden py-3 md:py-4 rounded-xl md:rounded-2xl transform transition-all duration-300 border-2 ${userBetSide === 'win'
+                                        ? 'bg-green-600 border-green-400 font-bold shadow-[0_0_20px_rgba(34,197,94,0.4)]'
+                                        : 'bg-green-900/40 border-green-500/30 hover:bg-green-800/60'
+                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                >
+                                    <span className="text-lg md:text-xl font-black text-white italic tracking-tighter">WIN</span>
+                                    {userBetSide === 'win' && <div className="absolute top-0 right-1 text-[6px] font-black text-white bg-green-400 px-1 rounded">ACTIVE</div>}
+                                </button>
+
+                                <button
+                                    onClick={() => handlePlaceLobbyBet('loss')}
+                                    disabled={lobbyPhase !== 'BETTING' || hasBetInCurrentRound || balance < betAmount}
+                                    className={`flex-1 relative overflow-hidden py-3 md:py-4 rounded-xl md:rounded-2xl transform transition-all duration-300 border-2 ${userBetSide === 'loss'
+                                        ? 'bg-red-600 border-red-400 font-bold shadow-[0_0_20px_rgba(239,68,68,0.4)]'
+                                        : 'bg-red-900/40 border-red-500/30 hover:bg-red-800/60'
+                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                >
+                                    <span className="text-lg md:text-xl font-black text-white italic tracking-tighter">LOSS</span>
+                                    {userBetSide === 'loss' && <div className="absolute top-0 right-1 text-[6px] font-black text-white bg-red-400 px-1 rounded">ACTIVE</div>}
+                                </button>
+                            </div>
+
+                            <div className="mt-2 md:mt-4 grid grid-cols-2 gap-2">
+                                <button onClick={() => adjustBet(1)} disabled={hasBetInCurrentRound}
+                                    className="bg-yellow-500/20 border border-yellow-500/50 py-2 rounded-lg md:rounded-xl text-yellow-500 font-bold hover:bg-yellow-500/40 transition-colors text-xs md:text-base">
+                                    + ₺1
+                                </button>
+                                <button onClick={() => adjustBet(-1)} disabled={hasBetInCurrentRound}
+                                    className="bg-yellow-500/20 border border-yellow-500/50 py-2 rounded-lg md:rounded-xl text-yellow-500 font-bold hover:bg-yellow-500/40 transition-colors text-xs md:text-base">
+                                    - ₺1
+                                </button>
+                            </div>
                         </div>
 
                         {/* Center: Game Grid - Responsive Size (final optimization) */}
@@ -630,33 +856,10 @@ export default function SweetBonanza1000() {
                                 </span>
                             </div>
 
-                            {/* Mobile Buy Buttons */}
-                            <div className="lg:hidden flex gap-2 w-full px-2 sm:px-4 mt-3 md:mt-4">
-                                <button onClick={() => handleBuyFreeSpins('regular')} disabled={isSpinning || balance < (betAmount * 100)}
-                                    className="bg-[#b91c1c] border border-[#fcd34d] px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl flex-1 min-w-[120px] disabled:opacity-50">
-                                    <span className="text-[7px] sm:text-[8px] font-black text-white uppercase block">BUY FS</span>
-                                    <span className="text-xs sm:text-sm font-black text-white italic">₺ {(betAmount * 100).toLocaleString()}</span>
-                                </button>
-                                <button onClick={() => handleBuyFreeSpins('super')} disabled={isSpinning || balance < (betAmount * 500)}
-                                    className="bg-[#ea580c] border border-[#fcd34d] px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl flex-1 min-w-[120px] disabled:opacity-50">
-                                    <span className="text-[7px] sm:text-[8px] font-black text-white uppercase block">SUPER BUY</span>
-                                    <span className="text-xs sm:text-sm font-black text-white italic">₺ {(betAmount * 500).toLocaleString()}</span>
-                                </button>
-                            </div>
+                            {/* Mobile Buy Buttons removed for lobby mode */}
                         </div>
 
-                        {/* Right Sidebar: Double Chance (Desktop) */}
-                        <div className="hidden lg:flex flex-col items-center">
-                            <div className="bg-[#052e16] border-2 border-green-500/50 rounded-2xl p-4 flex flex-col items-center gap-3 shadow-2xl">
-                                <div className="text-center">
-                                    <span className="text-sm font-black text-white tracking-widest block">{t('sweetBonanza.doubleWin').toUpperCase()}</span>
-                                    <span className="text-green-300 font-bold text-[10px]">₺ {(betAmount * 0.25).toFixed(2)}</span>
-                                </div>
-                                <button onClick={() => setDoubleChance(!doubleChance)} className={`relative w-16 h-8 rounded-full transition-all duration-500 ${doubleChance ? 'bg-green-500 shadow-[0_0_15px_#22c55e]' : 'bg-black/60'}`}>
-                                    <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-all duration-300 ${doubleChance ? 'translate-x-8' : 'translate-x-0'}`} />
-                                </button>
-                            </div>
-                        </div>
+                        {/* Right Sidebar: Removed for lobby mode */}
 
                     </div>
                 </div>
@@ -665,25 +868,45 @@ export default function SweetBonanza1000() {
             {/* Bottom Section - Footer (fixed height with margin) */}
             <div className="flex-shrink-0 z-40 pointer-events-none mb-2">
                 <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 pointer-events-auto">
-                    {/* Spin Controls - Ultra Compact */}
-                    <div className="flex items-center justify-center gap-1 sm:gap-2 py-0.5 bg-black/90 backdrop-blur-md rounded-t-xl">
-                        <button onClick={() => adjustBet(-0.50)} className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 flex items-center justify-center bg-white/10 rounded-full border border-white/20 text-white hover:bg-white/30 transition-all active:scale-90">
-                            <span className="material-symbols-outlined text-base sm:text-lg md:text-xl font-black">remove</span>
-                        </button>
+                    {/* Lobby Controls - Universal Session */}
+                    <div className="flex flex-col items-center justify-center py-2 bg-black/95 backdrop-blur-xl rounded-t-2xl border-x border-t border-white/10 relative overflow-hidden group">
+                        {/* Phase Indicators */}
+                        <div className="flex gap-4 mb-3 relative z-10">
+                            {['BETTING', 'SPINNING', 'RESULT'].map((phase) => (
+                                <div key={phase} className={`px-4 py-1 rounded-full text-[10px] font-black tracking-widest transition-all duration-500 border ${lobbyPhase === phase
+                                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white border-white/20 shadow-[0_0_15px_rgba(236,72,153,0.4)] scale-110'
+                                    : 'bg-white/5 text-white/20 border-transparent'
+                                    }`}>
+                                    {phase === 'BETTING' && lobbyPhase === 'BETTING' && <span className="inline-block w-2 h-2 bg-white rounded-full mr-2 animate-ping" />}
+                                    {phase}
+                                </div>
+                            ))}
+                        </div>
 
-                        <button onClick={handleSpin} disabled={isSpinning || balance < betAmount}
-                            className={`relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all
-                                ${isSpinning ? 'opacity-50' : 'hover:scale-110 active:scale-90 shadow-[0_0_20px_rgba(255,255,255,0.2)]'}
-                                bg-gradient-to-b from-white via-slate-100 to-slate-400 border-2 border-black/40`}
-                            style={{ outline: '1px solid #10b981' }}>
-                            <span className={`material-symbols-outlined text-2xl sm:text-3xl md:text-3xl font-black text-slate-800 transition-all duration-500 ${isSpinning ? 'rotate-[360deg] animate-spin-slow' : 'rotate-0'}`}>
-                                sync
-                            </span>
-                        </button>
+                        {/* Timer & Bet Info */}
+                        <div className="flex items-center gap-6 relative z-10">
+                            <div className={`flex items-center gap-3 px-8 py-3 rounded-2xl border-2 transition-all duration-500 shadow-2xl ${lobbyPhase === 'BETTING'
+                                ? 'bg-blue-600/20 border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.2)]'
+                                : 'bg-black/40 border-white/10'
+                                }`}>
+                                <span className={`material-symbols-outlined text-2xl ${lobbyPhase === 'SPINNING' ? 'animate-spin-slow text-yellow-500' : 'text-blue-400'}`}>
+                                    {lobbyPhase === 'BETTING' ? 'timer' : lobbyPhase === 'SPINNING' ? 'settings_backup_restore' : 'analytics'}
+                                </span>
+                                <span className="text-3xl font-black text-white italic tracking-tighter tabular-nums drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+                                    00:{lobbyTimeLeft.toString().padStart(2, '0')}
+                                </span>
+                            </div>
 
-                        <button onClick={() => adjustBet(0.50)} className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 flex items-center justify-center bg-white/10 rounded-full border border-white/20 text-white hover:bg-white/30 transition-all active:scale-90">
-                            <span className="material-symbols-outlined text-base sm:text-lg md:text-xl font-black">add</span>
-                        </button>
+                            {hasBetInCurrentRound && (
+                                <div className="flex flex-col items-center animate-bounce-premium border-l border-white/10 pl-6">
+                                    <span className="text-[8px] font-black text-pink-400 uppercase tracking-widest mb-1">CURRENT BET</span>
+                                    <div className={`px-4 py-1 rounded-lg border-2 font-black italic text-lg ${userBetSide === 'win' ? 'text-green-400 border-green-500/30 bg-green-500/10' : 'text-red-400 border-red-500/30 bg-red-500/10'
+                                        }`}>
+                                        {userBetSide?.toUpperCase()}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Control Bar - Minimal */}
