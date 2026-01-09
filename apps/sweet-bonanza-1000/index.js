@@ -260,7 +260,7 @@ export default function SweetBonanza1000() {
     const { t } = useTranslation()
 
     // Game state
-    const [balance, setBalance] = useState(100000)
+    const [balance, setBalance] = useState(0)
     const [betAmount, setBetAmount] = useState(3.50)
     const [grid, setGrid] = useState([])
     const [isSpinning, setIsSpinning] = useState(false)
@@ -274,6 +274,29 @@ export default function SweetBonanza1000() {
     const reelSpeedsRef = useRef([0, 0, 0, 0, 0, 0])
     const [waitingForAdmin, setWaitingForAdmin] = useState(false)
     const [user, setUser] = useState(null)
+    const [showSpinMessage, setShowSpinMessage] = useState(false)
+    const [currentSpinMessage, setCurrentSpinMessage] = useState('')
+
+    const playerSpinMessages = [
+        "LET'S BEGIN!",
+        "GOOD LUCK!",
+        "LET'S WIN!",
+        "BIG WIN AWAITS!",
+        "SPIN AND WIN!",
+        "FEEL THE LUCK!",
+        "HERE WE GO!",
+        "SWEET SUCCESS!",
+        "CANDY FEVER!",
+        "GO FOR GOLD!"
+    ]
+
+    const spectatorSpinMessages = [
+        "JUST WATCHING?",
+        "JOIN THE ACTION!",
+        "WHO WILL WIN?",
+        "NEXT ROUND IS YOURS!",
+        "FEEL THE VIBE!"
+    ]
 
     // Lobby / Universal Session state
     const [lobbyPhase, setLobbyPhase] = useState('BETTING')
@@ -296,6 +319,97 @@ export default function SweetBonanza1000() {
     const spinningRoundIdRef = useRef(null)
     const userBetSideRef = useRef(null)
     const betAmountRef = useRef(3.50)
+    const hasBetInCurrentRoundRef = useRef(false)
+
+    // Audio refs
+    const sounds = useRef({
+        bgm: null,
+        win: null,
+        loss: null,
+        spin: null,
+        countdown: null
+    })
+
+    // Initialize sounds
+    useEffect(() => {
+        sounds.current.bgm = new Howl({
+            src: ['/assets/bgm/sweet-bonanza-bgm-1.mp3'],
+            loop: true,
+            volume: 0.3,
+            html5: true
+        })
+        sounds.current.win = new Howl({
+            src: ['/assets/bgm/sweet-bonanza-win-sound-effect.mp3'],
+            volume: 0.66,
+            loop: true,
+            html5: false
+        })
+        sounds.current.loss = new Howl({
+            src: ['/assets/bgm/sweet-bonanza-loss-sound-effect.mp3'],
+            volume: 0.66,
+            html5: false
+        })
+        sounds.current.spin = new Howl({
+            src: ['/assets/bgm/sweet-bonanza-slot-scroll-sound-effect.mp3'],
+            loop: true,
+            volume: 0.44,
+            html5: false
+        })
+        sounds.current.countdown = new Howl({
+            src: ['/assets/bgm/sweet-bonanza-countdown-sound-effect.mp3'],
+            volume: 0.44,
+            html5: false
+        })
+
+        const playBgm = () => {
+            if (sounds.current.bgm && !sounds.current.bgm.playing()) {
+                sounds.current.bgm.play()
+            }
+        }
+        document.addEventListener('click', playBgm, { once: true })
+
+        return () => {
+            document.removeEventListener('click', playBgm)
+            Object.values(sounds.current).forEach(sound => {
+                if (sound) sound.unload()
+            })
+        }
+    }, [])
+
+    // Slot scrolling sound
+    useEffect(() => {
+        if (isSpinning) {
+            sounds.current.spin?.play()
+        } else {
+            sounds.current.spin?.stop()
+        }
+    }, [isSpinning])
+
+    // Win/Loss sounds
+    useEffect(() => {
+        if (showFireworks) {
+            sounds.current.win?.play()
+        } else {
+            sounds.current.win?.stop()
+        }
+    }, [showFireworks])
+
+    useEffect(() => {
+        if (showLossAnimation) {
+            sounds.current.loss?.play()
+        }
+    }, [showLossAnimation])
+
+    // Countdown sound logic
+    useEffect(() => {
+        if (lobbyPhase === 'BETTING') {
+            // Ticks all the time during betting
+            sounds.current.countdown?.play()
+        } else if (lobbyTimeLeft <= 3 && lobbyTimeLeft > 0) {
+            // Last 2-3 seconds during other phases
+            sounds.current.countdown?.play()
+        }
+    }, [lobbyTimeLeft, lobbyPhase])
 
     useEffect(() => {
         lobbyRoundIdRef.current = lobbyRoundId
@@ -316,6 +430,10 @@ export default function SweetBonanza1000() {
     useEffect(() => {
         betAmountRef.current = betAmount
     }, [betAmount])
+
+    useEffect(() => {
+        hasBetInCurrentRoundRef.current = hasBetInCurrentRound
+    }, [hasBetInCurrentRound])
     // Free spins state
     const [isFreeSpins, setIsFreeSpins] = useState(false)
     const [freeSpinsRemaining, setFreeSpinsRemaining] = useState(0)
@@ -356,6 +474,7 @@ export default function SweetBonanza1000() {
             const response = await authAPI.me()
             const userData = response?.data || response || null
             if (userData) {
+                console.log('[DEBUG] Fetched User Balance:', userData.balance);
                 setUser(userData)
                 const userBalance = userData.balance !== undefined ? userData.balance :
                     (userData.user?.balance !== undefined ? userData.user.balance : 0)
@@ -383,15 +502,7 @@ export default function SweetBonanza1000() {
         handleResize()
         window.addEventListener('resize', handleResize)
 
-        // Background Music
-        const bgm = new Audio('/assets/bgm/sweet bonanza bgm.mp3');
-        bgm.loop = true;
-        bgm.volume = 0.4;
-        const playBgm = () => {
-            bgm.play().catch(e => console.log('BGM Autoplay blocked, waiting for interaction'));
-        };
-        playBgm();
-        document.addEventListener('click', playBgm, { once: true });
+        // Background Music is now handled by Howl refs above
 
         fetchUserData()
         const balanceInterval = setInterval(fetchUserData, 5000)
@@ -417,7 +528,9 @@ export default function SweetBonanza1000() {
                     if (session.phase === 'BETTING') {
                         // Reset state for new round
                         setHasBetInCurrentRound(false);
+                        hasBetInCurrentRoundRef.current = false;
                         setUserBetSide(null);
+                        userBetSideRef.current = null;
                         setWinningSymbols([]);
                         setShowFireworks(false);
                         setShowLossAnimation(false);
@@ -456,9 +569,6 @@ export default function SweetBonanza1000() {
             clearInterval(balanceInterval)
             clearInterval(lobbyInterval)
             window.removeEventListener('resize', handleResize)
-            bgm.pause();
-            bgm.src = '';
-            document.removeEventListener('click', playBgm);
         }
     }, [])
 
@@ -466,6 +576,12 @@ export default function SweetBonanza1000() {
         setIsSpinning(true);
         setReelSpeeds([1, 1, 1, 1, 1, 1]);
         reelSpeedsRef.current = [1, 1, 1, 1, 1, 1];
+
+        // Trigger random spin message - use Ref for latest value
+        const messages = hasBetInCurrentRoundRef.current ? playerSpinMessages : spectatorSpinMessages;
+        setCurrentSpinMessage(messages[Math.floor(Math.random() * messages.length)]);
+        setShowSpinMessage(true);
+        setTimeout(() => setShowSpinMessage(false), 1200);
     };
 
     const processLobbyResult = async (result, roundId) => {
@@ -522,8 +638,16 @@ export default function SweetBonanza1000() {
     const handlePlaceLobbyBet = async (side) => {
         console.log('[BET] Attempting to place bet:', { side, hasBetInCurrentRound, lobbyPhase, balance, betAmount });
 
-        if (hasBetInCurrentRound || lobbyPhase !== 'BETTING' || balance < betAmount) {
-            console.log('[BET] Bet blocked:', { hasBetInCurrentRound, lobbyPhase, balance, betAmount });
+        if (lobbyPhase !== 'BETTING') {
+            console.log('[BET] Bet blocked: Not in BETTING phase');
+            return;
+        }
+
+        // Allow re-choice: check if balance is enough (adding back old bet if exists)
+        // Note: we'll use a simplified check here, server does the strict check
+        if (balance < betAmount && !hasBetInCurrentRound) {
+            console.log('[BET] Bet blocked: Insufficient balance');
+            alert('Insufficient balance');
             return;
         }
 
@@ -591,7 +715,6 @@ export default function SweetBonanza1000() {
     }
 
     const adjustBet = (delta) => {
-        if (isSpinning) return
         setBetAmount(prev => Math.max(0.20, Math.min(1000, prev + delta)))
     }
 
@@ -744,22 +867,28 @@ export default function SweetBonanza1000() {
             <div className="fixed inset-0 bg-gradient-to-b from-blue-500/20 via-transparent to-pink-500/20 pointer-events-none" />
 
             {/* Top Section - Header (fixed height) */}
-            <div className="flex-shrink-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm m-0 p-0">
+            <div className="flex-shrink-0 z-50 bg-transparent p-0"
+                style={{
+                    transform: 'scaleX(0.92) scaleY(0.828)', /* 0.92 * 0.9 = 0.828 for 10% height reduction */
+                    transformOrigin: 'top center',
+                    marginTop: '-8px' /* -5px from before + -3px as requested */
+                }}>
                 <div className="mx-auto w-[110%] md:w-[92%] lg:w-[102%] flex items-center justify-center m-0 p-0">
-                    <div className="w-full overflow-visible">
+                    <div className="w-full overflow-visible font-['Enchanted_Land']">
                         <h1
-                            className="w-full text-center text-6xl md:text-8xl font-normal italic tracking-normal animate-pulse px-4"
+                            className="w-full text-center text-[3.62rem] md:text-[5.8rem] font-normal italic animate-pulse px-4"
                             style={{
-                                fontFamily: "'Ruritania', cursive",
+                                fontFamily: "'Enchanted Land', cursive",
                                 background: 'linear-gradient(180deg, #FFD700 0%, #FFA500 50%, #FF6B00 100%)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 filter: 'drop-shadow(4px 4px 2px rgba(0, 0, 0, 0.8))',
-                                lineHeight: '1.3',
+                                lineHeight: '1.17', /* Reduced 10% from 1.3 */
+                                letterSpacing: '15px', /* 10px + 5px as requested */
                                 padding: '0.15em 0',
                                 position: 'relative',
-                                left: '-17px',
-                                top: '28px'
+                                left: '-20.6px', /* -15.6px + -5px as requested */
+                                top: '25.7px'
                             }}
                         >
                             Sweet Bonanza
@@ -781,7 +910,7 @@ export default function SweetBonanza1000() {
                             <div className="flex flex-row gap-2 w-full">
                                 <button
                                     onClick={() => handlePlaceLobbyBet('win')}
-                                    disabled={lobbyPhase !== 'BETTING' || hasBetInCurrentRound || balance < betAmount}
+                                    disabled={lobbyPhase !== 'BETTING'}
                                     className={`flex-1 relative overflow-hidden py-3 md:py-4 rounded-xl md:rounded-2xl transform transition-all duration-300 border-2 ${userBetSide === 'win'
                                         ? 'bg-green-600 border-green-400 font-bold shadow-[0_0_20px_rgba(34,197,94,0.4)]'
                                         : 'bg-green-900/40 border-green-500/30 hover:bg-green-800/60'
@@ -793,7 +922,7 @@ export default function SweetBonanza1000() {
 
                                 <button
                                     onClick={() => handlePlaceLobbyBet('loss')}
-                                    disabled={lobbyPhase !== 'BETTING' || hasBetInCurrentRound || balance < betAmount}
+                                    disabled={lobbyPhase !== 'BETTING'}
                                     className={`flex-1 relative overflow-hidden py-3 md:py-4 rounded-xl md:rounded-2xl transform transition-all duration-300 border-2 ${userBetSide === 'loss'
                                         ? 'bg-red-600 border-red-400 font-bold shadow-[0_0_20px_rgba(239,68,68,0.4)]'
                                         : 'bg-red-900/40 border-red-500/30 hover:bg-red-800/60'
@@ -805,11 +934,11 @@ export default function SweetBonanza1000() {
                             </div>
 
                             <div className="mt-2 md:mt-4 grid grid-cols-2 gap-2">
-                                <button onClick={() => adjustBet(1)} disabled={hasBetInCurrentRound}
+                                <button onClick={() => adjustBet(1)}
                                     className="bg-yellow-500/20 border border-yellow-500/50 py-2 rounded-lg md:rounded-xl text-yellow-500 font-bold hover:bg-yellow-500/40 transition-colors text-xs md:text-base">
                                     + ₺1
                                 </button>
-                                <button onClick={() => adjustBet(-1)} disabled={hasBetInCurrentRound}
+                                <button onClick={() => adjustBet(-1)}
                                     className="bg-yellow-500/20 border border-yellow-500/50 py-2 rounded-lg md:rounded-xl text-yellow-500 font-bold hover:bg-yellow-500/40 transition-colors text-xs md:text-base">
                                     - ₺1
                                 </button>
@@ -859,12 +988,7 @@ export default function SweetBonanza1000() {
                                 </div>
                             </div>
 
-                            {/* Status Ticker */}
-                            <div className="relative z-50 mt-3 md:mt-4 bg-black/60 backdrop-blur-md px-4 sm:px-6 md:px-8 py-1 sm:py-1.5 rounded-lg border border-white/10 shadow-xl skew-x-[-10deg]">
-                                <span className="text-sm sm:text-base md:text-lg lg:text-xl font-black italic tracking-widest text-white uppercase">
-                                    {isSpinning ? t('sweetBonanza.loading') : t('sweetBonanza.placeYourBets')}
-                                </span>
-                            </div>
+                            {/* Status Ticker Removed */}
 
                             {/* Mobile Buy Buttons removed for lobby mode */}
                         </div>
@@ -920,46 +1044,30 @@ export default function SweetBonanza1000() {
                         </div>
                     </div>
 
-                    {/* Control Bar - Minimal */}
-                    <div className="flex items-center justify-between py-0.5 border-t border-white/5 bg-black/90 backdrop-blur-md">
-                        <div className="flex items-center gap-1">
-                            <button className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
-                                <span className="material-symbols-outlined text-white/50 text-sm sm:text-base md:text-lg">info</span>
-                            </button>
-                            <button onClick={() => setShowAutoplayModal(true)} className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
-                                <span className="material-symbols-outlined text-white/50 text-sm sm:text-base md:text-lg">autorenew</span>
-                            </button>
+                    {/* Stats Bar - Enlarged */}
+                    <div className="flex items-center justify-center gap-4 sm:gap-6 py-4 border-t border-white/5 bg-black/95 backdrop-blur-md rounded-b-xl">
+                        <div className="flex items-center gap-2 sm:gap-4">
+                            <span className="text-yellow-400/90 font-black text-[10px] sm:text-[12px] uppercase tracking-[2px]">KREDİ</span>
+                            <span className="text-white font-black font-mono text-base sm:text-lg md:text-xl">₺ {balance.toLocaleString()}</span>
                         </div>
-
-                        {/* Center Toggles */}
-                        <div className="flex items-center gap-1 sm:gap-2 bg-white/5 px-1.5 sm:px-2 py-0.5 rounded-full border border-white/10">
-                            <button onClick={() => setTurboSpin(!turboSpin)} className={`text-[7px] sm:text-[8px] font-black tracking-widest ${turboSpin ? 'text-yellow-400' : 'text-white/20'}`}>TURBO</button>
-                            <div className="w-px h-2 bg-white/20" />
-                            <button onClick={() => setQuickSpin(!quickSpin)} className={`text-[7px] sm:text-[8px] font-black tracking-widest ${quickSpin ? 'text-green-400' : 'text-white/20'}`}>QUICK</button>
-                        </div>
-
-                        {/* Right Icon */}
-                        <button className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
-                            <span className="material-symbols-outlined text-white/50 text-sm sm:text-base md:text-lg">menu</span>
-                        </button>
-                    </div>
-
-                    {/* Stats Bar - Minimal */}
-                    <div className="flex items-center justify-center gap-1.5 sm:gap-2 py-0.5 border-t border-white/5 bg-black/90 backdrop-blur-md rounded-b-xl">
-                        <div className="flex items-center gap-0.5 sm:gap-1">
-                            <span className="text-yellow-400/80 font-black text-[6px] sm:text-[7px] uppercase tracking-widest">KREDİ</span>
-                            <span className="text-white font-black font-mono text-[10px] sm:text-xs">₺ {balance.toLocaleString()}</span>
-                        </div>
-                        <div className="w-px h-3 bg-white/10" />
-                        <div className="flex items-center gap-0.5 sm:gap-1">
-                            <span className="text-yellow-400/80 font-black text-[6px] sm:text-[7px] uppercase tracking-widest">BAHİS</span>
-                            <span className="text-white font-black font-mono text-xs sm:text-sm">₺ {betAmount.toLocaleString()}</span>
+                        <div className="w-px h-8 bg-white/20" />
+                        <div className="flex items-center gap-2 sm:gap-4">
+                            <span className="text-yellow-400/90 font-black text-[10px] sm:text-[12px] uppercase tracking-[2px]">BAHİS</span>
+                            <span className="text-white font-black font-mono text-lg sm:text-xl md:text-2xl">₺ {betAmount.toLocaleString()}</span>
                         </div>
                     </div>
 
 
                 </div>
             </div>
+
+            {showSpinMessage && (
+                <div className="fixed inset-0 z-[150] flex items-center justify-center pointer-events-none">
+                    <div className="text-5xl md:text-8xl font-black italic text-white animate-spin-msg drop-shadow-[0_0_30px_rgba(255,255,255,0.8)] px-10 py-5 bg-gradient-to-r from-transparent via-pink-500/40 to-transparent backdrop-blur-sm border-y-2 border-white/20">
+                        {currentSpinMessage}
+                    </div>
+                </div>
+            )}
 
             {/* Overlays */}
             {showLossAnimation && (
@@ -1036,6 +1144,14 @@ export default function SweetBonanza1000() {
                     50% { transform: translateY(-20px) rotate(10deg); }
                 }
                 .animate-bounce-coin { animation: bounce-coin 1s ease-in-out infinite; }
+
+                @keyframes spin-msg {
+                    0% { transform: scale(0.5); opacity: 0; filter: blur(10px); }
+                    20% { transform: scale(1.1); opacity: 1; filter: blur(0); }
+                    80% { transform: scale(1); opacity: 1; filter: blur(0); }
+                    100% { transform: scale(1.5); opacity: 0; filter: blur(20px); }
+                }
+                .animate-spin-msg { animation: spin-msg 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
             `}</style>
         </div>
     )

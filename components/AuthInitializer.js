@@ -29,6 +29,20 @@ export default function AuthInitializer() {
     };
 
     loadSession();
+
+    // Heartbeat: Ping backend every 10 minutes to prevent Render from sleeping
+    const pingBackend = async () => {
+      try {
+        await authAPI.pingHealth();
+        console.log('💓 Heartbeat: Backend is awake!');
+      } catch (err) {
+        console.warn('💓 Heartbeat: Failed to ping backend, it might be sleeping.');
+      }
+    };
+
+    const heartbeatInterval = setInterval(pingBackend, 1 * 60 * 1000); // 1 minute
+
+    return () => clearInterval(heartbeatInterval);
   }, [setUser, logout]);
 
   return null;
