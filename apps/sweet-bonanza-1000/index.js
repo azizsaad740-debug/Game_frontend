@@ -876,18 +876,16 @@ export default function SweetBonanza1000() {
                 <div className="mx-auto w-[110%] md:w-[92%] lg:w-[102%] flex items-center justify-center m-0 p-0">
                     <div className="w-full overflow-visible font-['Enchanted_Land']">
                         <h1
-                            className="w-full text-center text-[3.62rem] md:text-[5.8rem] font-normal italic animate-pulse px-4"
+                            className="game-header-text w-full text-center text-[1.8rem] sm:text-[3rem] md:text-[5.8rem] font-normal italic animate-pulse px-2"
                             style={{
                                 fontFamily: "'Enchanted Land', cursive",
                                 background: 'linear-gradient(180deg, #FFD700 0%, #FFA500 50%, #FF6B00 100%)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 filter: 'drop-shadow(4px 4px 2px rgba(0, 0, 0, 0.8))',
-                                lineHeight: '1.17', /* Reduced 10% from 1.3 */
-                                letterSpacing: '15px', /* 10px + 5px as requested */
+                                lineHeight: '1.17',
                                 padding: '0.15em 0',
                                 position: 'relative',
-                                left: '-20.6px', /* -15.6px + -5px as requested */
                                 top: '25.7px'
                             }}
                         >
@@ -1152,6 +1150,17 @@ export default function SweetBonanza1000() {
                     100% { transform: scale(1.5); opacity: 0; filter: blur(20px); }
                 }
                 .animate-spin-msg { animation: spin-msg 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+
+                .game-header-text {
+                    letter-spacing: 15px;
+                    left: -20.6px;
+                }
+                @media (max-width: 768px) {
+                    .game-header-text {
+                        letter-spacing: 2px !important;
+                        left: 0 !important;
+                    }
+                }
             `}</style>
         </div>
     )
