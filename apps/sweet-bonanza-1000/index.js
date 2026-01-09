@@ -876,7 +876,7 @@ export default function SweetBonanza1000() {
                 <div className="mx-auto w-[110%] md:w-[92%] lg:w-[102%] flex items-center justify-center m-0 p-0">
                     <div className="w-full overflow-visible font-['Enchanted_Land']">
                         <h1
-                            className="game-header-text w-full text-center text-[1.8rem] sm:text-[3rem] md:text-[5.8rem] font-normal italic animate-pulse px-2"
+                            className="game-header-text w-full text-center text-[2.8rem] sm:text-[3.5rem] md:text-[5.8rem] font-normal italic animate-pulse px-2"
                             style={{
                                 fontFamily: "'Enchanted Land', cursive",
                                 background: 'linear-gradient(180deg, #FFD700 0%, #FFA500 50%, #FF6B00 100%)',
@@ -885,8 +885,7 @@ export default function SweetBonanza1000() {
                                 filter: 'drop-shadow(4px 4px 2px rgba(0, 0, 0, 0.8))',
                                 lineHeight: '1.17',
                                 padding: '0.15em 0',
-                                position: 'relative',
-                                top: '25.7px'
+                                position: 'relative'
                             }}
                         >
                             Sweet Bonanza
@@ -1154,11 +1153,15 @@ export default function SweetBonanza1000() {
                 .game-header-text {
                     letter-spacing: 15px;
                     left: -20.6px;
+                    top: 25.7px;
                 }
                 @media (max-width: 768px) {
                     .game-header-text {
-                        letter-spacing: 2px !important;
+                        letter-spacing: 4px !important;
                         left: 0 !important;
+                        top: 0 !important;
+                        margin-top: -10px !important;
+                        margin-bottom: 2px !important;
                     }
                 }
             `}</style>
