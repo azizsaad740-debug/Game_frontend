@@ -1095,37 +1095,52 @@ export default function SweetBonanza1000() {
                 }
                 
                 @keyframes drop-in {
-                    0% { transform: translateY(-500%) scale(0.8); opacity: 0; }
-                    80% { transform: translateY(5%) scale(1.02); opacity: 1; }
-                    100% { transform: translateY(0) scale(1); opacity: 1; }
+                    0% { transform: translateY(-500%) scale(0.8) translateZ(0); opacity: 0; }
+                    80% { transform: translateY(5%) scale(1.02) translateZ(0); opacity: 1; }
+                    100% { transform: translateY(0) scale(1) translateZ(0); opacity: 1; }
                 }
-                .animate-drop-in { animation: drop-in 0.4s ease-in forwards; }
+                .animate-drop-in { 
+                    animation: drop-in 0.4s ease-in forwards; 
+                    will-change: transform, opacity;
+                }
                 
                 @keyframes match-pop {
-                    0% { transform: scale(1); filter: brightness(1); }
-                    50% { transform: scale(1.6); filter: brightness(3) drop-shadow(0 0 30px white); }
-                    100% { transform: scale(0); opacity: 0; }
+                    0% { transform: scale(1) translateZ(0); filter: brightness(1); }
+                    50% { transform: scale(1.6) translateZ(0); filter: brightness(2) drop-shadow(0 0 20px white); }
+                    100% { transform: scale(0) translateZ(0); opacity: 0; }
                 }
-                .animate-match-pop { animation: match-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+                .animate-match-pop { 
+                    animation: match-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; 
+                    will-change: transform, opacity;
+                }
                 
                 @keyframes glow-pulse {
                     0% { filter: brightness(1) drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
-                    50% { filter: brightness(1.3) drop-shadow(0 0 20px rgba(255,255,255,0.6)); }
+                    50% { filter: brightness(1.2) drop-shadow(0 0 15px rgba(255,255,255,0.5)); }
                     100% { filter: brightness(1) drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
                 }
-                .animate-glow-pulse { animation: glow-pulse 1s ease-in-out infinite; }
+                .animate-glow-pulse { 
+                    animation: glow-pulse 1s ease-in-out infinite; 
+                    will-change: filter;
+                }
                 
                 @keyframes neon-pulsate {
                     0%, 100% { border-color: rgba(255,255,255,0.3); box-shadow: 0 0 20px rgba(59,130,246,0.3); }
-                    50% { border-color: rgba(59,130,246,0.8); box-shadow: 0 0 60px rgba(59,130,246,0.8), inset 0 0 20px rgba(59,130,246,0.5); }
+                    50% { border-color: rgba(59,130,246,0.8); box-shadow: 0 0 40px rgba(59,130,246,0.6), inset 0 0 15px rgba(59,130,246,0.4); }
                 }
-                .animate-neon-pulsate { animation: neon-pulsate 2s linear infinite; }
+                .animate-neon-pulsate { 
+                    animation: neon-pulsate 2s linear infinite; 
+                    will-change: box-shadow, border-color;
+                }
                 
                 @keyframes spin-slow {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
+                    from { transform: rotate(0deg) translateZ(0); }
+                    to { transform: rotate(360deg) translateZ(0); }
                 }
-                .animate-spin-slow { animation: spin-slow 1.5s linear infinite; }
+                .animate-spin-slow { 
+                    animation: spin-slow 1.5s linear infinite; 
+                    will-change: transform;
+                }
                 
                 @keyframes fade-in {
                     from { opacity: 0; }
@@ -1134,16 +1149,22 @@ export default function SweetBonanza1000() {
                 .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
                 
                 @keyframes bounce-premium {
-                    0%, 100% { transform: translateY(0) scale(1); }
-                    50% { transform: translateY(-30px) scale(1.05); }
+                    0%, 100% { transform: translateY(0) scale(1) translateZ(0); }
+                    50% { transform: translateY(-30px) scale(1.05) translateZ(0); }
                 }
-                .animate-bounce-premium { animation: bounce-premium 2s ease-in-out infinite; }
+                .animate-bounce-premium { 
+                    animation: bounce-premium 2s ease-in-out infinite; 
+                    will-change: transform;
+                }
 
                 @keyframes bounce-coin {
-                    0%, 100% { transform: translateY(0) rotate(0); }
-                    50% { transform: translateY(-20px) rotate(10deg); }
+                    0%, 100% { transform: translateY(0) rotate(0) translateZ(0); }
+                    50% { transform: translateY(-20px) rotate(10deg) translateZ(0); }
                 }
-                .animate-bounce-coin { animation: bounce-coin 1s ease-in-out infinite; }
+                .animate-bounce-coin { 
+                    animation: bounce-coin 1s ease-in-out infinite; 
+                    will-change: transform;
+                }
 
                 @keyframes spin-msg {
                     0% { transform: scale(0.5); opacity: 0; filter: blur(10px); }
