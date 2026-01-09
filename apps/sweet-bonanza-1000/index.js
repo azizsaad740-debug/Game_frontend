@@ -1160,10 +1160,10 @@ export default function SweetBonanza1000() {
                         margin-top: -10px !important;
                     }
                     .game-header-text {
-                        font-size: calc(2.8rem + 3px + 10px) !important;
+                        font-size: calc(2.8rem + 3px + 10px + 5px) !important;
                         letter-spacing: 4px !important;
-                        left: -10px !important;
-                        top: calc(15px + 10px) !important;
+                        left: calc(-10px - 2px) !important;
+                        top: calc(15px + 10px + 10px) !important;
                         margin-top: -10px !important;
                         margin-bottom: 2px !important;
                     }
